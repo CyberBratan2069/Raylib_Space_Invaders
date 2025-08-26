@@ -15,24 +15,25 @@
 
 int main() {
 
-    InitWindow(755, 700, "Space Invaders");
+    FLAG_FULLSCREEN_MODE;
+
+    InitWindow(750, 700, "Space Invaders");
     SetTargetFPS(60);
 
+
     Vector2 startPos = {100, 100};
-    Spaceship* ship = newSpaceship("../graphics/spaceship.png", startPos);
-
-
+    Spaceship* spaceship = newSpaceship("../graphics/spaceship.png", startPos);
 
     while (!WindowShouldClose()) {
-
         BeginDrawing();
         ClearBackground(GRAY);
 
-        DrawTexture(ship->image, ship->position.x, ship->position.y, WHITE);
+        draw(spaceship);
 
         EndDrawing();
     }
 
+    deleteSpaceship(spaceship);
     CloseWindow();
 
 

@@ -13,7 +13,7 @@
 
 
 Spaceship* newSpaceship(const char* path, Vector2 position) {
-    Spaceship* spaceship = malloc(sizeof(Spaceship));
+    Spaceship* spaceship = malloc(sizeof *spaceship);
     if(!spaceship) return NULL;
 
     spaceship->image = LoadTexture(path);
@@ -23,12 +23,25 @@ Spaceship* newSpaceship(const char* path, Vector2 position) {
     }
 
     spaceship->position = position;
+
     return spaceship;
 }
 
-void spaceship_delete(Spaceship* spaceship) {
-    if(spaceship) {
+
+void deleteSpaceship(Spaceship* spaceship) {
+    if(spaceship->image.id) {
         UnloadTexture(spaceship->image);
         free(spaceship);
     }
 }
+
+
+void draw(Spaceship* spaceship) {
+    DrawTexture(spaceship->image, spaceship->position.x, spaceship->position.y, WHITE);
+}
+
+
+
+
+
+

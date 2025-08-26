@@ -15,14 +15,13 @@ typedef struct Spaceship {
     Vector2   position;
 } Spaceship;
 
+
 Spaceship* newSpaceship(const char* path, Vector2 position);
-void spaceship_delete(Spaceship* spaceship);
-
-
-void draw();
-void moveLeft();
-void moveRight();
-void fireLaser();
+void deleteSpaceship(Spaceship* s);
+void draw(Spaceship* s);
+void moveLeft(Spaceship* s);
+void moveRight(Spaceship* s);
+void fireLaser(Spaceship* s);
 
 
 
