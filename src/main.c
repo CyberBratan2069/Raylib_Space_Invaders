@@ -18,6 +18,8 @@
 
 int main() {
 
+    SetTraceLogLevel(LOG_INFO);
+
     FLAG_FULLSCREEN_MODE;
 
     Color grey = {29, 29, 27, 255};

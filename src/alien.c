@@ -10,32 +10,27 @@
 
 
 Alien* alien = NULL;
+Texture2D alienImages[3] = {};
 
 Alien* new_alien(int type, Vector2 position) {
+    if(type < 1 || type > 3) return NULL;
+
     alien = malloc(sizeof *alien);
     if(!alien) return NULL;
-    alien->type = type;
+
+    alien->type     = type;
     alien->position = position;
+    alien->image.id = 0;
 
     switch(type) {
-        case 1:
-            alien->image = LoadTexture("../graphics/alien_1.png");
-            break;
-        case 2:
-            alien->image = LoadTexture("../graphics/alien_2.png");
-            break;
-        case 3:
-            alien->image = LoadTexture("../graphics/alien_3.png");
-            break;
-        default:
-            free(alien);
-            alien = NULL;
-            return NULL;
+        case 1: alien->image = LoadTexture("../graphics/alien_1.png"); break;
+        case 2: alien->image = LoadTexture("../graphics/alien_2.png"); break;
+        case 3: alien->image = LoadTexture("../graphics/alien_3.png"); break;
+        default: alien->image = LoadTexture("../graphics/alien_1.png"); break;
     }
 
     if(alien->image.id == 0) {
         free(alien);
-        //alien = NULL;
         return NULL;
     }
 
@@ -43,22 +38,33 @@ Alien* new_alien(int type, Vector2 position) {
 }
 
 
-void delete_alien() {
+void updateAlien(int direction) {
+    if(!alien) return;
+    alien->position.x += (float)direction;
+
+}
+
+void delete_alien(Alien* alien) {
     if(!alien) return;
 
-    UnloadTexture(alien->image);
+    if(alien->image.id != 0) {
+        TraceLog(LOG_INFO, "delete_alien(): UnloadTexture id=%u", alien->image.id);
+        UnloadTexture(alien->image);
+        alien->image.id = 0;
+    }
+
     free(alien);
     alien = NULL;
 }
 
 
-void drawAlien() {
+void drawAlien(const Alien* alien) {
     if(!alien || alien->image.id == 0) return;
     DrawTextureV(alien->image, alien->position, WHITE);
 }
 
 
-int getAlienType() {
+int getAlienType(const Alien* alien) {
     if(!alien) return 0;
     return alien->type;
 }

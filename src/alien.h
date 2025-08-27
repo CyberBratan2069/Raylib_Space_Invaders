@@ -15,9 +15,10 @@ typedef struct Alien {
 } Alien;
 
 Alien* new_alien(int type, Vector2 position);
-void delete_alien();
-int getAlienType();
-//void updateAlien();
+void delete_alien(Alien* alien);
+int getAlienType(const Alien* alien);
+void updateAlien(int direction);
 void drawAlien();
+
 
 extern Alien* alien;

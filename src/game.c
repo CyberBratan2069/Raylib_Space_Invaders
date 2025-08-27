@@ -9,7 +9,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <printf.h>
+#include <tclTomMath.h>
+#include <time.h>
+
 
 #define ALIEN_ROWS 5
 #define ALIEN_COLS 11
@@ -45,8 +47,10 @@ Game* new_game() {
     }
 
     /// Alien initialization
-    game->aliens = NULL;
-    game->aliensCount = 0;
+    SetRandomSeed((unsigned int)time(NULL));
+    game->aliens          = NULL;
+    game->aliensCount     = 0;
+    game->aliensDirection = 1;
     createAliens();
 
 
@@ -57,13 +61,14 @@ Game* new_game() {
 
 
 void delete_game() {
+    TraceLog(LOG_INFO, "delete_game(): begin");
     delete_spaceship();
     lasers_free(&game->lasers);
     delete_Obstacles(game->obstacles, game->obstaclesCount);
-    //delete_alien();
     deleteAliens();
     free(game);
     game = NULL;
+    TraceLog(LOG_INFO, "delete_game(): end");
 }
 
 
@@ -71,6 +76,9 @@ void updateGame() {
     for(Laser* it = game->lasers.data; it< game->lasers.data + game->lasers.size; it++) {
         updateLaser(it);
     }
+
+    moveAliens();
+    alienShootLaser();
 
     lasers_compact_inactive(&game->lasers);
     deleteInactiveLasers();
@@ -122,8 +130,6 @@ Obstacle** createObstacles(Vector2 start, size_t count, float spacingX) {
         if(!obstaclesArr[i]) {
             for(size_t j=0; j< i; j++) {
                 free(obstaclesArr[j]);
-                //free(obstaclesArr);
-                //return NULL;
             }
 
             free(obstaclesArr);
@@ -150,7 +156,7 @@ void createAliens(void) {
     float startX = 100.0f;
     float startY = 80.0f;
     float spacingX = 50.0f;
-    float spacingY = 40.0f;
+    float spacingY = 50.0f;
 
     size_t total = (size_t)(rows * cols);
     game->aliens = (Alien**)malloc(total * sizeof *game->aliens);
@@ -159,14 +165,17 @@ void createAliens(void) {
         return;
     }
 
-    size_t idx = 0;
+    size_t index = 0;
     for(int i=0; i< rows; i++) {
-        int type = (i % 3) + 1;
+        int type;
+        if(i == 0) type = 3;
+        else if(i <= 2) type = 2;
+        else type = 1;
         for(int j=0; j< cols; j++) {
             Vector2 pos = (Vector2){startX + (float)j * spacingX, startY + (float)i * spacingY};
             Alien* ali = new_alien(type, pos);
             if(!ali) {
-                for(size_t k=0; k< idx; k++) {
+                for(size_t k=0; k< index; k++) {
                     if(game->aliens[k]) {
                         UnloadTexture(game->aliens[k]->image);
                         free(game->aliens[k]);
@@ -177,10 +186,10 @@ void createAliens(void) {
                 game->aliensCount = 0;
                 return;
             }
-            game->aliens[idx++] = ali;
+            game->aliens[index++] = ali;
         }
     }
-    game->aliensCount = idx;
+    game->aliensCount = index;
 }
 
 
@@ -196,14 +205,124 @@ void drawAliens(void) {
 
 
 void deleteAliens(void) {
-    if(!game->aliens) return;
+    if(!game->aliens) {
+        TraceLog(LOG_INFO, "deleteAliens(): game->aliens is NULL");
+        return;
+    }
+    TraceLog(LOG_INFO, "deleteAliens(): game->aliens is not NULL", game->aliensCount);
+
     for(size_t i=0; i< game->aliensCount; i++) {
         if(game->aliens[i]) {
-            UnloadTexture(game->aliens[i]->image);
+            Texture2D tex = game->aliens[i]->image;
+            if(tex.id != 0) {
+                TraceLog(LOG_INFO, "deleteAliens(): UnloadTexture id=%u(%ux%u)", tex.id, tex.width, tex.height);
+                UnloadTexture(tex);
+            }
             free(game->aliens[i]);
         }
     }
     free(game->aliens);
-    game->aliens = NULL;
+    game->aliens      = NULL;
     game->aliensCount = 0;
+    TraceLog(LOG_INFO, "deleteAliens(): end");
+}
+
+
+void moveAliens(void) {
+    if(!game->aliens || game->aliensCount == 0) return;
+
+    const float direction_x = 1.0f;
+    const float direction_y = 10.0f;
+
+    float minX = 1e9f;
+    float maxX = -1e9f;
+    int any = 0;
+
+    for(size_t i=0; i< game->aliensCount; i++) {
+        Alien* ali = game->aliens[i];
+        if(!ali || ali->image.id == 0) continue;
+        any = 1;
+        if(ali->position.x < minX) minX = ali->position.x;
+        float right = ali->position.x + (float)ali->image.width;
+        if(right > maxX) maxX = right;
+    }
+    if(!any) return;
+
+    const float screenWidth = (float)GetScreenWidth();
+
+    bool hitRight = (maxX + direction_x * (float)game->aliensDirection >= screenWidth);
+    bool hitLeft  = (minX + direction_x * (float)game->aliensDirection <= 0.0f);
+
+    if(hitRight || hitLeft) {
+        game->aliensDirection *= -1;
+        for(size_t i=0; i< game->aliensCount; i++) {
+            Alien* ali = game->aliens[i];
+            if(!ali) continue;
+            ali->position.y += direction_y;
+        }
+    }
+
+    for(size_t i=0; i< game->aliensCount; i++) {
+        Alien* ali = game->aliens[i];
+        if(!ali) continue;
+        ali->position.x += direction_x * (float)game->aliensDirection;
+    }
+}
+
+
+int findBottomAlien(int col) {
+    for(int i= ALIEN_ROWS - 1; i>= 0; i--) {
+        size_t index = (size_t)(ALIEN_COLS * i + col);
+        Alien* ali = game->aliens[index];
+        if(ali && ali->image.id != 0) {
+            return (int)index;
+        }
+    }
+    return -1;
+}
+
+
+void alienShootLaser(void) {
+    if(!game || !game->aliens || game->aliensCount == 0) return;
+
+    static double lastShootTime = 0.0;
+    static int    lastShooter   = -1;
+    const double  shootFrequency = 0.8;
+
+    double currenTime = GetTime();
+    if (currenTime - lastShootTime < shootFrequency) return;
+
+    int tries = 0;
+    int index = -1;
+    while (tries < 32) {
+        int col = GetRandomValue(0, ALIEN_COLS - 1);
+        int cand = findBottomAlien(col);
+        if (cand >= 0 && cand != lastShooter) {
+            index = cand;
+            break;
+        }
+
+        tries++;
+    }
+
+    if (index < 0) return;
+
+    Alien* shooter = game->aliens[index];
+    lastShooter    = index;
+    lastShootTime  = currenTime;
+
+    Laser laser;
+    laser.position = (Vector2){
+            shooter->position.x + (float)shooter->image.width * 0.5f - 2.0f,
+            shooter->position.y + (float)shooter->image.height
+    };
+
+    laser.speed  = 6;
+    laser.active = true;
+
+    if(!lasers_push(&game->lasers, laser)) {
+        TraceLog(LOG_WARNING, "alienShootLaser(): lasers_push() failed");
+    } else {
+        TraceLog(LOG_INFO, "alienShootLaser(): Shot von idx=%d", index);
+    }
 }
