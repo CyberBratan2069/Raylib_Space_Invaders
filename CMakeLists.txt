@@ -7,6 +7,11 @@ add_executable(SpaceInvaders
         src/main.c
         src/spaceship.h
         src/spaceship.c
+        src/game.c
+        src/game.h
+        src/laser.h
+        src/laser.c
+        src/laser_vec.h
 )
 
 find_package(raylib 4.0 REQUIRED)

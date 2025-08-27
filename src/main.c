@@ -10,28 +10,36 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "spaceship.h"
+//#include "spaceship.h"
+#include "game.h"
 
 
 int main() {
 
     FLAG_FULLSCREEN_MODE;
 
+    Color grey = {29, 29, 27, 255};
     InitWindow(750, 700, "Space Invaders");
     SetTargetFPS(60);
 
-    Spaceship* ship = newSpaceship();
+
+    game = new_game();
+
 
     while (!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(GRAY);
 
-        drawSpaceship(ship);
+        handleInput();
+        updateGame();
+        BeginDrawing();
+        ClearBackground(grey);
+
+        drawGame();
 
         EndDrawing();
     }
 
-    deleteSpaceship(ship);
+
+    delete_game();
     CloseWindow();
 
 
