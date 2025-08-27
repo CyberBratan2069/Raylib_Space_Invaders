@@ -10,8 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#include "spaceship.h"
+
 #include "game.h"
+
+
 
 
 int main() {
@@ -24,7 +26,11 @@ int main() {
 
 
     game = new_game();
-
+    if(!game) {
+        fprintf(stderr, "Failed to initialize game\n");
+        CloseWindow();
+        return 1;
+    }
 
     while (!WindowShouldClose()) {
 
@@ -32,16 +38,12 @@ int main() {
         updateGame();
         BeginDrawing();
         ClearBackground(grey);
-
         drawGame();
-
         EndDrawing();
     }
 
 
     delete_game();
     CloseWindow();
-
-
     return 0;
 }

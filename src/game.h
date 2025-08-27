@@ -7,12 +7,17 @@
 
 #include "spaceship.h"
 #include "laser_vec.h"
+#include "obstacle.h"
+#include "alien.h"
 
 #pragma once
 
 typedef struct Game {
-
-    LaserVec lasers;
+    LaserVec   lasers;
+    Obstacle** obstacles;
+    size_t     obstaclesCount;
+    Alien**    aliens;
+    size_t     aliensCount;
 } Game;
 
 Game* new_game();
@@ -22,5 +27,12 @@ void drawGame();
 void handleInput();
 
 void deleteInactiveLasers();
+
+Obstacle** createObstacles(Vector2 start, size_t count, float spacingX);
+void delete_Obstacles(Obstacle** obstaclesArr, size_t count);
+
+void createAliens(void);
+void drawAliens(void);
+void deleteAliens(void);
 
 extern Game* game;
