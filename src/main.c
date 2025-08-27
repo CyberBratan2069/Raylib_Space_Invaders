@@ -20,20 +20,18 @@ int main() {
     InitWindow(750, 700, "Space Invaders");
     SetTargetFPS(60);
 
-
-    Vector2 startPos = {100, 100};
-    Spaceship* spaceship = newSpaceship("../graphics/spaceship.png", startPos);
+    Spaceship* ship = newSpaceship();
 
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(GRAY);
 
-        draw(spaceship);
+        drawSpaceship(ship);
 
         EndDrawing();
     }
 
-    deleteSpaceship(spaceship);
+    deleteSpaceship(ship);
     CloseWindow();
 
 

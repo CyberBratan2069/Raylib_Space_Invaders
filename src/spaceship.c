@@ -12,23 +12,27 @@
 #include <string.h>
 
 
-Spaceship* newSpaceship(const char* path, Vector2 position) {
+Spaceship* newSpaceship() {
     Spaceship* spaceship = malloc(sizeof *spaceship);
     if(!spaceship) return NULL;
 
-    spaceship->image = LoadTexture(path);
+    spaceship->image = LoadTexture("../graphics/spaceship.png");
     if(spaceship->image.id == 0) {
         free(spaceship);
         return NULL;
     }
 
-    spaceship->position = position;
+
+    spaceship->position.x = (GetScreenWidth()  - spaceship->image.width)  / 2.0f;
+    spaceship->position.y = (GetScreenHeight() - spaceship->image.height) - 20.0f;
 
     return spaceship;
 }
 
 
 void deleteSpaceship(Spaceship* spaceship) {
+    if(!spaceship) return;
+
     if(spaceship->image.id) {
         UnloadTexture(spaceship->image);
         free(spaceship);
@@ -36,8 +40,10 @@ void deleteSpaceship(Spaceship* spaceship) {
 }
 
 
-void draw(Spaceship* spaceship) {
-    DrawTexture(spaceship->image, spaceship->position.x, spaceship->position.y, WHITE);
+void drawSpaceship(Spaceship* spaceship) {
+    if(!spaceship) return;
+
+    DrawTextureV(spaceship->image, spaceship->position, WHITE);
 }
 
 

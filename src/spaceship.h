@@ -16,9 +16,9 @@ typedef struct Spaceship {
 } Spaceship;
 
 
-Spaceship* newSpaceship(const char* path, Vector2 position);
+Spaceship* newSpaceship();
 void deleteSpaceship(Spaceship* s);
-void draw(Spaceship* s);
+void drawSpaceship(Spaceship* s);
 void moveLeft(Spaceship* s);
 void moveRight(Spaceship* s);
 void fireLaser(Spaceship* s);
