@@ -52,5 +52,7 @@ void alienShootLaser(void);
 
 void checkForHitbox();
 
+void gameOver();
+
 
 extern Game* game;

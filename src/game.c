@@ -8,16 +8,11 @@
 #include "alien.h"
 
 #include <stdlib.h>
-#include <string.h>
-#include <tclTomMath.h>
 #include <time.h>
 
 
 #define ALIEN_ROWS 5
 #define ALIEN_COLS 11
-
-#define LASER_WIDTH  3
-#define LASER_HEIGHT 15
 
 Game* game = NULL;
 
@@ -94,7 +89,7 @@ void delete_game() {
 
 
 void updateGame() {
-    if(!game && game->gameOver) return;
+    if(!game || game->gameOver) return;
 
     double currentTime = GetTime();
     if(currentTime - game->timeLastSpawnMysteryShip > game->mysteryShipSpawnInterval) {
@@ -118,12 +113,14 @@ void updateGame() {
     updateMysteryShip();
 
     if(game->playerLives <= 0) {
-        game->gameOver = true;
+        game->gameOver;
+        return;
     }
 }
 
 
 void drawGame() {
+
     drawSpaceship();
 
     for(Laser* it = game->lasers.data; it< game->lasers.data + game->lasers.size; it++) {
@@ -136,10 +133,29 @@ void drawGame() {
 
     drawAliens();
     drawMysteryShip();
+
+    if(game && game->gameOver) {
+        const char* msg = "GAME OVER";
+        int textW = MeasureText(msg, 48);
+        int x = (GetScreenWidth() - textW) / 2;
+        int y = GetScreenHeight() / 2 - 48;
+
+        DrawText(msg, x, y, 48, RED);
+
+        const char* sub = "Press ESC to end";
+        int subW = MeasureText(sub, 20);
+        int sx = (GetScreenWidth() - subW) / 2;
+        int sy = y + 20 + 20;
+        DrawText(sub, sx, sy, 20, RAYWHITE);
+        return;
+    }
+
 }
 
 
 void handleInput() {
+    if(game && game->gameOver) return;
+
     if(IsKeyDown(KEY_LEFT))  moveLeft();
     if(IsKeyDown(KEY_RIGHT)) moveRight();
     if(IsKeyDown(KEY_SPACE)) fireLaser();
@@ -554,7 +570,7 @@ void checkForHitbox() {
             }
             if(game->playerLives <= 0) {
                 game->playerLives = 0;
-                game->playerLives = true;
+                gameOver();
                 TraceLog(LOG_INFO, "GAME OVER");
             }
 
@@ -615,4 +631,16 @@ void checkForHitbox() {
             }
         }
     }
+}
+
+void gameOver() {
+    if(!game || game->gameOver) return;
+    game->gameOver = true;
+    TraceLog(LOG_INFO, "gameOver(): triggered");
+
+    for(size_t i=0; i< game->lasers.size; i++) {
+        game->lasers.data[i].active = false;
+    }
+
+    if(mysteryShip) mysteryShip->active = false;
 }
