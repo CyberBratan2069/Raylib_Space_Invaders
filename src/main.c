@@ -21,6 +21,7 @@ int main() {
     FLAG_FULLSCREEN_MODE;
 
     InitWindow(WINDOW_WIDTH + OFFSET, WINDOW_HEIGHT + 2 * OFFSET, "Space Invaders");
+    Font font = LoadFontEx("../font/monogram.ttf", 64, 0, 0);
     SetTargetFPS(60);
 
 
@@ -42,6 +43,7 @@ int main() {
                     (Vector2){775, 730},
                     3.0f,
                     YELLOW);
+        DrawTextEx(font, "Level 01", (Vector2){570, 740}, 34, 2, YELLOW);
         drawGame();
 
         EndDrawing();
