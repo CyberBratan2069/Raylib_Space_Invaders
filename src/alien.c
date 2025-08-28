@@ -10,7 +10,7 @@
 
 
 Alien* alien = NULL;
-Texture2D alienImages[3] = {};
+
 
 Alien* new_alien(int type, Vector2 position) {
     if(type < 1 || type > 3) return NULL;
@@ -35,39 +35,6 @@ Alien* new_alien(int type, Vector2 position) {
     }
 
     return alien;
-}
-
-
-void updateAlien(int direction) {
-    if(!alien) return;
-    alien->position.x += (float)direction;
-
-}
-
-
-void delete_alien() {
-    if(!alien) return;
-
-    if(alien->image.id != 0) {
-        TraceLog(LOG_INFO, "delete_alien(): UnloadTexture id=%u", alien->image.id);
-        UnloadTexture(alien->image);
-        alien->image.id = 0;
-    }
-
-    free(alien);
-    alien = NULL;
-}
-
-
-void drawAlien() {
-    if(!alien || alien->image.id == 0) return;
-    DrawTextureV(alien->image, alien->position, WHITE);
-}
-
-
-int getAlienType() {
-    if(!alien) return 0;
-    return alien->type;
 }
 
 

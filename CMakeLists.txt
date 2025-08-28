@@ -12,8 +12,6 @@ add_executable(SpaceInvaders
         src/laser.h
         src/laser.c
         src/laser_vec.h
-        src/block.h
-        src/block.c
         src/obstacle.c
         src/obstacle.h
         src/alien.h

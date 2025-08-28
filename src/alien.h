@@ -15,10 +15,6 @@ typedef struct Alien {
 } Alien;
 
 Alien* new_alien(int type, Vector2 position);
-void delete_alien();
-int getAlienType();
-void updateAlien(int direction);
-void drawAlien();
 Rectangle hitboxAlien();
 
 

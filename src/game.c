@@ -34,7 +34,7 @@ Game* new_game() {
     size_t count = 4;
     float obstacleWidth = OBSTACLE_W * 3.0f;
     float screenWidth   = (float)GetScreenWidth();
-    float gap = (screenWidth - (count * obstacleWidth)) / (count + 1);
+    float gap = (screenWidth - ((float)count * obstacleWidth)) / (float)(count + 1);
     Vector2 start = (Vector2){gap, 550.0f};
     float spacingX = obstacleWidth + gap;
 
@@ -117,7 +117,7 @@ void updateGame() {
     updateMysteryShip();
 
     if(game->playerLives <= 0) {
-        game->gameOver;
+        game->gameOver = true;
         return;
     }
 
@@ -243,7 +243,7 @@ void createAliens(void) {
     float spacingX = 50.0f;
     float spacingY = 50.0f;
 
-    size_t total = (size_t)(rows * cols);
+    size_t total = ((size_t)rows * (size_t)cols);
     game->aliens = (Alien**)malloc(total * sizeof *game->aliens);
     if(!game->aliens) {
         game->aliensCount = 0;
@@ -376,7 +376,7 @@ void moveAliens(void) {
             if (CheckCollisionRecs(ar, ship)) {
                 game->playerLives = 0;
                 game->gameOver = true;
-                return; // sofort beenden
+                return;
             }
         }
     }
@@ -522,12 +522,14 @@ void checkForHitbox() {
                     checkForHighscore();
                     break;
                 }
+            }
+        }
 
-                if(CheckCollisionRecs(hitboxMysteryship(), hitboxLaser(laser))) {
-                    mysteryShip->active = false;
-                    game->score += 300;
-                    checkForHighscore();
-                }
+        if(laser->active) {
+            if(CheckCollisionRecs(hitboxMysteryship(), hitboxLaser(laser))) {
+                mysteryShip->active = false;
+                game->score += 300;
+                checkForHighscore();
             }
         }
 

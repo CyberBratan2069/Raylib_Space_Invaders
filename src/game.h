@@ -34,6 +34,8 @@ typedef struct Game {
     int        score;
     int        highScore;
 
+    int        level;
+
 } Game;
 
 Game* new_game();

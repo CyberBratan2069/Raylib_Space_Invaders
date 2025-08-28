@@ -50,6 +50,7 @@ void drawSpaceship() {
     DrawTextureV(spaceship->image, spaceship->position, WHITE);
 }
 
+
 void moveLeft() {
     spaceship->position.x -= 7.0f;
     if(spaceship->position.x < 25.0f) {
@@ -65,10 +66,11 @@ void moveRight() {
     }
 }
 
+
 void fireLaser() {
     if(GetTime() - spaceship->lastFireTime >= 0.35f) {
         Laser laser;
-        laser.position = (Vector2){spaceship->position.x + spaceship->image.width / 2.0f - 2.0f, spaceship->position.y};
+        laser.position = (Vector2){spaceship->position.x + (float)spaceship->image.width / 2.0f - 2.0f, spaceship->position.y};
         laser.speed = -10;
         laser.active = true;
         lasers_push(&game->lasers, laser);
@@ -86,8 +88,3 @@ Rectangle hitboxSpaceship() {
         (float)spaceship->image.height
     };
 }
-
-
-
-
-
