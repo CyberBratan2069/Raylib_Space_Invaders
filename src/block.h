@@ -15,5 +15,6 @@ typedef struct Block {
 
 Block* new_block(Vector2 position);
 void drawBlock();
+Rectangle hitboxBlock();
 
 extern Block* block;

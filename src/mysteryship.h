@@ -23,6 +23,7 @@ void delete_mysteryShip();
 void updateMysteryShip();
 void drawMysteryShip();
 void spawnMysteryShip();
+Rectangle hitboxMysteryship();
 
 
 extern MysteryShip* mysteryShip;

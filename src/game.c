@@ -16,6 +16,9 @@
 #define ALIEN_ROWS 5
 #define ALIEN_COLS 11
 
+#define LASER_WIDTH  3
+#define LASER_HEIGHT 15
+
 Game* game = NULL;
 
 Game* new_game() {
@@ -102,6 +105,8 @@ void updateGame() {
     moveAliens();
     alienShootLaser();
 
+    checkForHitbox();
+
     lasers_compact_inactive(&game->lasers);
     deleteInactiveLasers();
 
@@ -133,6 +138,19 @@ void handleInput() {
 
 
 void deleteInactiveLasers() {
+
+    /*
+    size_t i = 0;
+    while(i < game->lasers.size) {
+        Laser* laser = &game->lasers.data[i];
+        if(!laser->active) {
+            lasers_remove_unordered(&game->lasers, i);
+        } else {
+            i++;
+        }
+    }
+    */
+
     for(Laser* it = game->lasers.data; it< game->lasers.data + game->lasers.size; it++) {
         if(!it->active) {
             size_t idx = (size_t)(it - game->lasers.data);
@@ -141,6 +159,7 @@ void deleteInactiveLasers() {
             it++;
         }
     }
+
 }
 
 
@@ -354,5 +373,31 @@ void alienShootLaser(void) {
         TraceLog(LOG_WARNING, "alienShootLaser(): lasers_push() failed");
     } else {
         TraceLog(LOG_INFO, "alienShootLaser(): Shot von idx=%d", index);
+    }
+}
+
+
+void checkForHitbox() {
+
+    /// Spaceship lasers
+    if(!game || !game->aliens || game->aliensCount == 0) return;
+
+    for(size_t i=0; i< game->lasers.size; i++) {
+        Laser* laser = &game->lasers.data[i];
+        if(!laser->active) continue;
+        if(laser->speed >= 0) continue;
+
+        for(size_t a=0; a< game->aliensCount; a++) {
+            alien = game->aliens[a];
+            if(!alien || alien->image.id == 0) continue;
+
+            if(CheckCollisionRecs(hitboxAlien(), hitboxLaser(laser))) {
+                UnloadTexture(alien->image);
+                free(alien);
+                game->aliens[a] = NULL;
+                laser->active = false;
+                break;
+            }
+        }
     }
 }

@@ -46,5 +46,7 @@ void deleteAliens(void);
 void moveAliens(void);
 void alienShootLaser(void);
 
+void checkForHitbox();
+
 
 extern Game* game;

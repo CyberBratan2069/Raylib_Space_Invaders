@@ -17,6 +17,8 @@ typedef struct Laser {
 
 void updateLaser(Laser* laser);
 void drawLaser(const Laser* laser);
+Rectangle hitboxLaser(const Laser* laser);
+
 
 
 

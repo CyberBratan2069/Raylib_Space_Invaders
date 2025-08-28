@@ -22,6 +22,7 @@ void drawSpaceship();
 void moveLeft();
 void moveRight();
 void fireLaser();
+Rectangle hitboxSpaceship();
 
 extern Spaceship* spaceship;
 

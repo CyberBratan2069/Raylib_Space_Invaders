@@ -19,6 +19,7 @@ void delete_alien();
 int getAlienType();
 void updateAlien(int direction);
 void drawAlien();
+Rectangle hitboxAlien();
 
 
 extern Alien* alien;

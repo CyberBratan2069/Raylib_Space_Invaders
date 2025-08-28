@@ -69,3 +69,14 @@ int getAlienType() {
     if(!alien) return 0;
     return alien->type;
 }
+
+
+Rectangle hitboxAlien() {
+    if(!alien) return (Rectangle){0};
+    return (Rectangle) {
+            alien->position.x,
+            alien->position.y,
+            (float)alien->image.width,
+            (float)alien->image.height
+    };
+}

@@ -74,3 +74,24 @@ void drawMysteryShip() {
     if(!mysteryShip || !mysteryShip->active) return;
     DrawTextureV(mysteryShip->image, mysteryShip->position, WHITE);
 }
+
+
+Rectangle hitboxMysteryship() {
+    if(!mysteryShip) return (Rectangle){0};
+
+    if(mysteryShip->active) {
+        return (Rectangle) {
+                mysteryShip->position.x,
+                mysteryShip->position.y,
+                (float)mysteryShip->image.width,
+                (float)mysteryShip->image.height
+        };
+    } else {
+        return (Rectangle) {
+                mysteryShip->position.x,
+                mysteryShip->position.y,
+                0.0f,
+                0.0f
+        };
+    }
+}

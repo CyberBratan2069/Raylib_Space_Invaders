@@ -9,7 +9,6 @@
 #include "laser.h"
 
 #include <raylib.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -28,8 +27,8 @@ Spaceship* new_spaceship() {
         return NULL;
     }
 
-    spaceship->position.x = (GetScreenWidth()  - spaceship->image.width)  / 2.0f;
-    spaceship->position.y = (GetScreenHeight() - spaceship->image.height) - 20.0f;
+    spaceship->position.x = (float)(GetScreenWidth()  - spaceship->image.width)  / 2.0f;
+    spaceship->position.y = (float)(GetScreenHeight() - spaceship->image.height) - 20.0f;
 
     spaceship->lastFireTime = 0.0;
 
@@ -61,8 +60,8 @@ void moveLeft() {
 
 void moveRight() {
     spaceship->position.x += 10.0f;
-    if(spaceship->position.x > GetScreenWidth() - spaceship->image.width) {
-        spaceship->position.x = GetScreenWidth() - spaceship->image.width;
+    if(spaceship->position.x > (float)GetScreenWidth() - (float)spaceship->image.width) {
+        spaceship->position.x = (float)GetScreenWidth() - (float)spaceship->image.width;
     }
 }
 
@@ -77,6 +76,16 @@ void fireLaser() {
     }
 }
 
+
+Rectangle hitboxSpaceship() {
+    if(!spaceship) return (Rectangle){0};
+    return (Rectangle) {
+        spaceship->position.x,
+        spaceship->position.y,
+        (float)spaceship->image.width,
+        (float)spaceship->image.height
+    };
+}
 
 
 
