@@ -9,6 +9,8 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <stdio.h>
+
 
 
 #define ALIEN_ROWS 5
@@ -67,6 +69,8 @@ Game* new_game() {
     /// Player initialization
     game->playerLives = 3;
     game->gameOver    = false;
+    game->score       = 0;
+    game->highScore   = loadHighscoreFromFile();
 
     game->obstaclesCount = count;
     lasers_init(&game->lasers);
@@ -514,11 +518,15 @@ void checkForHitbox() {
                     free(alien);
                     game->aliens[al] = NULL;
                     laser->active = false;
+                    game->score += 100;
+                    checkForHighscore();
                     break;
                 }
 
                 if(CheckCollisionRecs(hitboxMysteryship(), hitboxLaser(laser))) {
                     mysteryShip->active = false;
+                    game->score += 300;
+                    checkForHighscore();
                 }
             }
         }
@@ -658,6 +666,14 @@ void checkForHitbox() {
 }
 
 
+void checkForHighscore() {
+    if(game->score > game->highScore) {
+        game->highScore = game->score;
+        safeHighscoreToFile(game->highScore);
+    }
+}
+
+
 void gameOver() {
     if(!game || game->gameOver) return;
     game->gameOver = true;
@@ -679,3 +695,36 @@ void reset() {
     TraceLog(LOG_INFO, "reset(): new game");
 }
 
+
+void safeHighscoreToFile(int highscore) {
+    const char* path = "highscore.dat";
+    FILE* f = fopen(path, "wb");
+    if(!f) {
+        TraceLog(LOG_WARNING, "safeHighscoreToFile(): cannot open '%' for writing", path);
+        return;
+    }
+    size_t w = fwrite(&highscore, sizeof(highscore), 1, f);
+    if(w != 1) {
+        TraceLog(LOG_WARNING, "safeHighscoreToFile(): write failed for '%s'", path);
+    }
+    fclose(f);
+}
+
+
+int loadHighscoreFromFile() {
+    const char* path = "highscore.dat";
+    FILE* file = fopen(path, "rb");
+    if(!file) {
+        return 0;
+    }
+
+    int hs = 0;
+    size_t r = fread(&hs, sizeof(hs), 1, file);
+    fclose(file);
+
+    if(r != 1) {
+        TraceLog(LOG_WARNING, "loadHighscoreFrom(): read failed for '%s'", path);
+        return 0;
+    }
+    return hs;
+}

@@ -31,6 +31,9 @@ typedef struct Game {
 
     bool       gameOver;
 
+    int        score;
+    int        highScore;
+
 } Game;
 
 Game* new_game();
@@ -54,6 +57,10 @@ void checkForHitbox();
 
 void gameOver();
 void reset();
+
+void checkForHighscore();
+void safeHighscoreToFile(int highcore);
+int loadHighscoreFromFile();
 
 
 extern Game* game;
