@@ -28,7 +28,7 @@ Spaceship* new_spaceship() {
     }
 
     spaceship->position.x = (float)(GetScreenWidth()  - spaceship->image.width)  / 2.0f;
-    spaceship->position.y = (float)(GetScreenHeight() - spaceship->image.height) - 20.0f;
+    spaceship->position.y = (float)(GetScreenHeight() - spaceship->image.height) - 100.0f;
 
     spaceship->lastFireTime = 0.0;
 
@@ -51,17 +51,17 @@ void drawSpaceship() {
 }
 
 void moveLeft() {
-    spaceship->position.x -= 10.0f;
-    if(spaceship->position.x < 0.0f) {
-        spaceship->position.x = 0.0f;
+    spaceship->position.x -= 7.0f;
+    if(spaceship->position.x < 25.0f) {
+        spaceship->position.x = 25.0f;
     }
 }
 
 
 void moveRight() {
-    spaceship->position.x += 10.0f;
-    if(spaceship->position.x > (float)GetScreenWidth() - (float)spaceship->image.width) {
-        spaceship->position.x = (float)GetScreenWidth() - (float)spaceship->image.width;
+    spaceship->position.x += 7.0f;
+    if(spaceship->position.x > (float)GetScreenWidth() - (float)spaceship->image.width - 25) {
+        spaceship->position.x = (float)GetScreenWidth() - (float)spaceship->image.width - 25;
     }
 }
 

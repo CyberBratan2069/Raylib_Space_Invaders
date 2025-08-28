@@ -116,6 +116,12 @@ void updateGame() {
         game->gameOver;
         return;
     }
+
+    if(game->gameOver) {
+        if(IsKeyDown(KEY_ENTER)) {
+            reset();
+        }
+    }
 }
 
 
@@ -134,27 +140,45 @@ void drawGame() {
     drawAliens();
     drawMysteryShip();
 
-    if(game && game->gameOver) {
-        const char* msg = "GAME OVER";
-        int textW = MeasureText(msg, 48);
-        int x = (GetScreenWidth() - textW) / 2;
-        int y = GetScreenHeight() / 2 - 48;
+    if (game && game->gameOver) {
+        const char* msg  = "GAME OVER";
+        const int   fs   = 48;
+        const int   msgW = MeasureText(msg, fs);
+        const int   mx   = (GetScreenWidth() - msgW) / 2;
+        const int   my   = GetScreenHeight() / 2 - fs;
 
-        DrawText(msg, x, y, 48, RED);
 
-        const char* sub = "Press ESC to end";
-        int subW = MeasureText(sub, 20);
-        int sx = (GetScreenWidth() - subW) / 2;
-        int sy = y + 20 + 20;
-        DrawText(sub, sx, sy, 20, RAYWHITE);
-        return;
+        DrawText(msg, mx+2, my+2, fs, BLACK);
+        DrawText(msg, mx,   my,   fs, RED);
+
+        // sub1
+        const char* sub1    = "Press ESC to leave";
+        const int   subFS   = 20;
+        const int   sub1W   = MeasureText(sub1, subFS);
+        const int   sub1X   = (GetScreenWidth() - sub1W) / 2;
+        const int   sub1Y   = my + fs + 20;
+        DrawText(sub1, sub1X+1, sub1Y+1, subFS, BLACK);
+        DrawText(sub1, sub1X,   sub1Y,   subFS, RAYWHITE);
+
+
+        const char* sub2  = "Press ENTER to restart";
+        const int   sub2W = MeasureText(sub2, subFS);
+        const int   sub2X = (GetScreenWidth() - sub2W) / 2;
+        const int   sub2Y = sub1Y + subFS + 8; // 8px Abstand unter sub1
+        DrawText(sub2, sub2X+1, sub2Y+1, subFS, BLACK);
+        DrawText(sub2, sub2X,   sub2Y,   subFS, RAYWHITE);
+
     }
-
 }
 
 
 void handleInput() {
-    if(game && game->gameOver) return;
+    if(game && game->gameOver) {
+        if(IsKeyDown(KEY_ENTER)) {
+            reset();
+        }
+        return;
+    }
 
     if(IsKeyDown(KEY_LEFT))  moveLeft();
     if(IsKeyDown(KEY_RIGHT)) moveRight();
@@ -183,7 +207,7 @@ Obstacle** createObstacles(Vector2 start, size_t count, float spacingX) {
     if(!obstaclesArr) return NULL;
 
     for(int i=0; i< count; i++) {
-        obstaclesArr[i] = new_obstacle((Vector2){start.x + (float)i * spacingX, start.y});
+        obstaclesArr[i] = new_obstacle((Vector2){start.x + (float)i * spacingX, start.y + 50});
         if(!obstaclesArr[i]) {
             for(size_t j=0; j< i; j++) {
                 free(obstaclesArr[j]);
@@ -314,8 +338,8 @@ void moveAliens(void) {
 
     const float screenWidth = (float)GetScreenWidth();
 
-    bool hitRight = (maxX + direction_x * (float)game->aliensDirection >= screenWidth);
-    bool hitLeft  = (minX + direction_x * (float)game->aliensDirection <= 0.0f);
+    bool hitRight = (maxX + direction_x * (float)game->aliensDirection >= screenWidth - 25);
+    bool hitLeft  = (minX + direction_x * (float)game->aliensDirection <= 25.0f);
 
     if(hitRight || hitLeft) {
         game->aliensDirection *= -1;
@@ -633,6 +657,7 @@ void checkForHitbox() {
     }
 }
 
+
 void gameOver() {
     if(!game || game->gameOver) return;
     game->gameOver = true;
@@ -644,3 +669,13 @@ void gameOver() {
 
     if(mysteryShip) mysteryShip->active = false;
 }
+
+
+void reset() {
+    if(game) {
+        delete_game();
+    }
+    game = new_game();
+    TraceLog(LOG_INFO, "reset(): new game");
+}
+

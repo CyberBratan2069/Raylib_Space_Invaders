@@ -3,17 +3,15 @@
  * @created on 26 Aug. 2025
  **********************************************************************************************************************/
 
-
-
 #include <raylib.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-
 #include "game.h"
 
-
+#define OFFSET 50
+#define WINDOW_WIDTH 750
+#define WINDOW_HEIGHT 700
+#define GREY   (Color){29, 29, 27, 255}
+#define YELLOW (Color){243, 216, 63, 255}
 
 
 int main() {
@@ -22,8 +20,7 @@ int main() {
 
     FLAG_FULLSCREEN_MODE;
 
-    Color grey = {29, 29, 27, 255};
-    InitWindow(750, 700, "Space Invaders");
+    InitWindow(WINDOW_WIDTH + OFFSET, WINDOW_HEIGHT + 2 * OFFSET, "Space Invaders");
     SetTargetFPS(60);
 
 
@@ -39,7 +36,12 @@ int main() {
         handleInput();
         updateGame();
         BeginDrawing();
-        ClearBackground(grey);
+        ClearBackground(GREY);
+        DrawRectangleRoundedLines((Rectangle){10, 10, 780, 780}, 0.18f, 20, YELLOW);
+        DrawLineEx((Vector2){25, 730},
+                    (Vector2){775, 730},
+                    3.0f,
+                    YELLOW);
         drawGame();
 
         EndDrawing();

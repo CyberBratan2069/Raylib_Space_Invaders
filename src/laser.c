@@ -12,7 +12,7 @@
 void updateLaser(Laser* laser) {
     if(!laser || !laser->active) return;
     laser->position.y += (float)laser->speed;
-    if(laser->position.y > (float)GetScreenHeight() || laser->position.y < 0) {
+    if(laser->position.y > (float)GetScreenHeight() - 100 || laser->position.y < 25) {
         laser->active = false;
 
     }
