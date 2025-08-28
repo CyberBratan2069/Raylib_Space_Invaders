@@ -44,7 +44,8 @@ void updateAlien(int direction) {
 
 }
 
-void delete_alien(Alien* alien) {
+
+void delete_alien() {
     if(!alien) return;
 
     if(alien->image.id != 0) {
@@ -58,13 +59,13 @@ void delete_alien(Alien* alien) {
 }
 
 
-void drawAlien(const Alien* alien) {
+void drawAlien() {
     if(!alien || alien->image.id == 0) return;
     DrawTextureV(alien->image, alien->position, WHITE);
 }
 
 
-int getAlienType(const Alien* alien) {
+int getAlienType() {
     if(!alien) return 0;
     return alien->type;
 }

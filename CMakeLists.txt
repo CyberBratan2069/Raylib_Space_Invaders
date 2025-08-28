@@ -18,6 +18,8 @@ add_executable(SpaceInvaders
         src/obstacle.h
         src/alien.h
         src/alien.c
+        src/mysteryship.h
+        src/mysteryship.c
 )
 
 find_package(raylib 4.0 REQUIRED)

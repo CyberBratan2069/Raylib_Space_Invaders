@@ -54,6 +54,19 @@ Game* new_game() {
     createAliens();
 
 
+    /// Mystery ship initialization
+    if(!new_mysteryShip()) {
+        deleteAliens();
+        delete_Obstacles(game->obstacles, count);
+        delete_spaceship();
+        free(game);
+        game = NULL;
+        return NULL;
+    }
+    game->timeLastSpawnMysteryShip = 0.0f;
+    game->mysteryShipSpawnInterval = (float)GetRandomValue(10, 20);
+
+
     game->obstaclesCount = count;
     lasers_init(&game->lasers);
     return game;
@@ -66,6 +79,7 @@ void delete_game() {
     lasers_free(&game->lasers);
     delete_Obstacles(game->obstacles, game->obstaclesCount);
     deleteAliens();
+    delete_mysteryShip();
     free(game);
     game = NULL;
     TraceLog(LOG_INFO, "delete_game(): end");
@@ -73,6 +87,14 @@ void delete_game() {
 
 
 void updateGame() {
+
+    double currentTime = GetTime();
+    if(currentTime - game->timeLastSpawnMysteryShip > game->mysteryShipSpawnInterval) {
+        spawnMysteryShip();
+        game->timeLastSpawnMysteryShip = (float)GetTime();
+        game->mysteryShipSpawnInterval = (float)GetRandomValue(10, 20);
+    }
+
     for(Laser* it = game->lasers.data; it< game->lasers.data + game->lasers.size; it++) {
         updateLaser(it);
     }
@@ -82,6 +104,8 @@ void updateGame() {
 
     lasers_compact_inactive(&game->lasers);
     deleteInactiveLasers();
+
+    updateMysteryShip();
 }
 
 
@@ -97,6 +121,7 @@ void drawGame() {
     }
 
     drawAliens();
+    drawMysteryShip();
 }
 
 
@@ -173,8 +198,8 @@ void createAliens(void) {
         else type = 1;
         for(int j=0; j< cols; j++) {
             Vector2 pos = (Vector2){startX + (float)j * spacingX, startY + (float)i * spacingY};
-            Alien* ali = new_alien(type, pos);
-            if(!ali) {
+            alien = new_alien(type, pos);
+            if(!alien) {
                 for(size_t k=0; k< index; k++) {
                     if(game->aliens[k]) {
                         UnloadTexture(game->aliens[k]->image);
@@ -186,7 +211,7 @@ void createAliens(void) {
                 game->aliensCount = 0;
                 return;
             }
-            game->aliens[index++] = ali;
+            game->aliens[index++] = alien;
         }
     }
     game->aliensCount = index;
@@ -196,9 +221,9 @@ void createAliens(void) {
 void drawAliens(void) {
     if(!game->aliens || game->aliensCount == 0) return;
     for(size_t i=0; i< game->aliensCount; i++) {
-        Alien* ali = game->aliens[i];
-        if(ali && ali->image.id != 0) {
-            DrawTextureV(ali->image, ali->position, WHITE);
+        alien = game->aliens[i];
+        if(alien && alien->image.id != 0) {
+            DrawTextureV(alien->image, alien->position, WHITE);
         }
     }
 }
@@ -239,13 +264,20 @@ void moveAliens(void) {
     int any = 0;
 
     for(size_t i=0; i< game->aliensCount; i++) {
-        Alien* ali = game->aliens[i];
-        if(!ali || ali->image.id == 0) continue;
+        alien = game->aliens[i];
+        if(!alien || alien->image.id == 0) {
+            continue;
+        }
+
         any = 1;
-        if(ali->position.x < minX) minX = ali->position.x;
-        float right = ali->position.x + (float)ali->image.width;
+        if(alien->position.x < minX) {
+            minX = alien->position.x;
+        }
+
+        float right = alien->position.x + (float)alien->image.width;
         if(right > maxX) maxX = right;
     }
+
     if(!any) return;
 
     const float screenWidth = (float)GetScreenWidth();
@@ -256,16 +288,16 @@ void moveAliens(void) {
     if(hitRight || hitLeft) {
         game->aliensDirection *= -1;
         for(size_t i=0; i< game->aliensCount; i++) {
-            Alien* ali = game->aliens[i];
-            if(!ali) continue;
-            ali->position.y += direction_y;
+            alien = game->aliens[i];
+            if(!alien) continue;
+            alien->position.y += direction_y;
         }
     }
 
     for(size_t i=0; i< game->aliensCount; i++) {
-        Alien* ali = game->aliens[i];
-        if(!ali) continue;
-        ali->position.x += direction_x * (float)game->aliensDirection;
+        alien = game->aliens[i];
+        if(!alien) continue;
+        alien->position.x += direction_x * (float)game->aliensDirection;
     }
 }
 
@@ -273,8 +305,8 @@ void moveAliens(void) {
 int findBottomAlien(int col) {
     for(int i= ALIEN_ROWS - 1; i>= 0; i--) {
         size_t index = (size_t)(ALIEN_COLS * i + col);
-        Alien* ali = game->aliens[index];
-        if(ali && ali->image.id != 0) {
+        alien = game->aliens[index];
+        if(alien && alien->image.id != 0) {
             return (int)index;
         }
     }
@@ -285,24 +317,22 @@ int findBottomAlien(int col) {
 void alienShootLaser(void) {
     if(!game || !game->aliens || game->aliensCount == 0) return;
 
-    static double lastShootTime = 0.0;
-    static int    lastShooter   = -1;
+    static double lastShootTime  = 0.0;
+    static int    lastShooter    = -1;
     const double  shootFrequency = 0.8;
 
     double currenTime = GetTime();
     if (currenTime - lastShootTime < shootFrequency) return;
 
-    int tries = 0;
-    int index = -1;
-    while (tries < 32) {
+    int maxTries = 32;
+    int index    = -1;
+    for(int i=0; i< maxTries; i++) {
         int col = GetRandomValue(0, ALIEN_COLS - 1);
         int cand = findBottomAlien(col);
         if (cand >= 0 && cand != lastShooter) {
             index = cand;
             break;
         }
-
-        tries++;
     }
 
     if (index < 0) return;

@@ -9,8 +9,10 @@
 #include "laser_vec.h"
 #include "obstacle.h"
 #include "alien.h"
+#include "mysteryship.h"
 
 #pragma once
+
 
 typedef struct Game {
     LaserVec   lasers;
@@ -21,6 +23,10 @@ typedef struct Game {
     Alien**    aliens;
     size_t     aliensCount;
     int        aliensDirection;
+
+    float      mysteryShipSpawnInterval;
+    float      timeLastSpawnMysteryShip;
+
 } Game;
 
 Game* new_game();

@@ -7,18 +7,22 @@
 
 #pragma once
 #include <raylib.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
-typedef struct Alien {
+typedef struct MysteryShip {
     Texture2D image;
     Vector2 position;
-    int type;
-} Alien;
-
-Alien* new_alien(int type, Vector2 position);
-void delete_alien();
-int getAlienType();
-void updateAlien(int direction);
-void drawAlien();
+    int speed;
+    bool active;
+} MysteryShip;
 
 
-extern Alien* alien;
+MysteryShip* new_mysteryShip();
+void delete_mysteryShip();
+void updateMysteryShip();
+void drawMysteryShip();
+void spawnMysteryShip();
+
+
+extern MysteryShip* mysteryShip;
