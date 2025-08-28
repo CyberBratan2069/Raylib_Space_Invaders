@@ -12,7 +12,6 @@
 #include <stdio.h>
 
 
-
 #define ALIEN_ROWS 5
 #define ALIEN_COLS 11
 
@@ -23,8 +22,32 @@ Game* new_game() {
     game = malloc(sizeof *game);
     if(!game) return NULL;
 
+    /// Music initialization
+    game->music = LoadMusicStream("../sounds/backgroundMusic.wav");
+    PlayMusicStream(game->music);
+
+    game->shootLaserSound   = LoadSound("../sounds/spaceshipLaserSound.wav");
+    game->alienKillingSound = LoadSound("../sounds/alienKillingSound.wav");
+
+
+    if(game->shootLaserSound.frameCount == 0) {
+        TraceLog(LOG_WARNING, "shootLaserSound seems empty(check path");
+    } else {
+        SetSoundVolume(game->shootLaserSound, 0.9f);
+    }
+
+    if(game->alienKillingSound.frameCount == 0) {
+        TraceLog(LOG_WARNING, "alienKillingSound seems empty(check path)");
+    } else {
+        SetSoundVolume(game->alienKillingSound, 2.0f);
+    }
+
+
     /// Spaceship initialization
     if(!new_spaceship()) {
+        UnloadMusicStream(game->music);
+        UnloadSound(game->shootLaserSound);
+        UnloadSound(game->alienKillingSound);
         free(game);
         game = NULL;
         return NULL;
@@ -71,7 +94,10 @@ Game* new_game() {
     game->gameOver    = false;
     game->score       = 0;
     game->highScore   = loadHighscoreFromFile();
+    game->level       = 1;
+    game->anyAlive    = (int)game->aliensCount;
 
+    ///
     game->obstaclesCount = count;
     lasers_init(&game->lasers);
 
@@ -79,8 +105,14 @@ Game* new_game() {
 }
 
 
+
 void delete_game() {
     TraceLog(LOG_INFO, "delete_game(): begin");
+
+    UnloadMusicStream(game->music);
+    UnloadSound(game->shootLaserSound);
+    UnloadSound(game->alienKillingSound);
+
     delete_spaceship();
     lasers_free(&game->lasers);
     delete_Obstacles(game->obstacles, game->obstaclesCount);
@@ -120,6 +152,8 @@ void updateGame() {
         game->gameOver = true;
         return;
     }
+
+    currentLevel();
 
     if(game->gameOver) {
         if(IsKeyDown(KEY_ENTER)) {
@@ -247,6 +281,7 @@ void createAliens(void) {
     game->aliens = (Alien**)malloc(total * sizeof *game->aliens);
     if(!game->aliens) {
         game->aliensCount = 0;
+        game->anyAlive    = 0;
         return;
     }
 
@@ -269,12 +304,14 @@ void createAliens(void) {
                 free(game->aliens);
                 game->aliens = NULL;
                 game->aliensCount = 0;
+                game->anyAlive    = 0;
                 return;
             }
             game->aliens[index++] = alien;
         }
     }
     game->aliensCount = index;
+    game->anyAlive    = (int)index;
 }
 
 
@@ -309,6 +346,7 @@ void deleteAliens(void) {
     free(game->aliens);
     game->aliens      = NULL;
     game->aliensCount = 0;
+    game->anyAlive    = 0;
     TraceLog(LOG_INFO, "deleteAliens(): end");
 }
 
@@ -316,7 +354,8 @@ void deleteAliens(void) {
 void moveAliens(void) {
     if(!game->aliens || game->aliensCount == 0) return;
 
-    const float direction_x = 1.0f;
+    float speedFactor = 1.0f + 0.50f * (float)(game->level - 1);
+    const float direction_x = 1.0f * speedFactor;
     const float direction_y = 10.0f;
 
     float minX = 1e9f;
@@ -457,9 +496,11 @@ int findBottomAlien(int col) {
 void alienShootLaser(void) {
     if(!game || !game->aliens || game->aliensCount == 0) return;
 
+    int all5Levels = 5;
+    float frequencyFactor        = 1.0f + 0.50f * (float)(game->level - 1) / (float)all5Levels;
     static double lastShootTime  = 0.0;
     static int    lastShooter    = -1;
-    const double  shootFrequency = 0.8;
+    const double  shootFrequency = 0.8 / frequencyFactor;
 
     double currenTime = GetTime();
     if (currenTime - lastShootTime < shootFrequency) return;
@@ -513,10 +554,18 @@ void checkForHitbox() {
                 alien = game->aliens[al];
                 if(!alien || alien->image.id == 0) continue;
 
+                /// Hit Alien
                 if(CheckCollisionRecs(hitboxAlien(), hitboxLaser(laser))) {
+                    PlaySound(game->alienKillingSound);
+                    TraceLog(LOG_INFO, "KILL: Alien got hit");
                     UnloadTexture(alien->image);
                     free(alien);
                     game->aliens[al] = NULL;
+
+                    if(game->anyAlive > 0) {
+                        game->anyAlive--;
+                    }
+
                     laser->active = false;
                     game->score += 100;
                     checkForHighscore();
@@ -525,11 +574,14 @@ void checkForHitbox() {
             }
         }
 
+        /// Hit MysteryShip
         if(laser->active) {
             if(CheckCollisionRecs(hitboxMysteryship(), hitboxLaser(laser))) {
+                TraceLog(LOG_INFO, "KILL: MysteryShip got hit");
                 mysteryShip->active = false;
                 game->score += 300;
                 checkForHighscore();
+                PlaySound(game->alienKillingSound);
             }
         }
 
@@ -729,4 +781,27 @@ int loadHighscoreFromFile() {
         return 0;
     }
     return hs;
+}
+
+
+void currentLevel() {
+    if(!game || game->gameOver) return;
+
+    if(game->anyAlive == 0) {
+        nextLevel();
+    }
+}
+
+void nextLevel() {
+    game->level += 1;
+
+    deleteAliens();
+    createAliens();
+
+    if(game->level % 3 == 0 && game->playerLives < 5) {
+        game->playerLives++;
+    }
+
+    game->timeLastSpawnMysteryShip = (float)GetTime();
+    game->mysteryShipSpawnInterval = (float)GetRandomValue(10, 20);
 }

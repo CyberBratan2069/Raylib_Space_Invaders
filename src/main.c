@@ -18,10 +18,16 @@ int main() {
 
     SetTraceLogLevel(LOG_INFO);
 
-    FLAG_FULLSCREEN_MODE;
-
     InitWindow(WINDOW_WIDTH + OFFSET, WINDOW_HEIGHT + 2 * OFFSET, "Space Invaders");
     SetTargetFPS(60);
+    InitAudioDevice();
+    if(!IsAudioDeviceReady()) {
+        TraceLog(LOG_ERROR, "Audi device NOT ready");
+        CloseWindow();
+        return 1;
+    }
+
+    SetMasterVolume(1.0f);
 
     Image bgImg = LoadImage("../graphics/BackGround.png");
     Texture2D bg = LoadTextureFromImage(bgImg);
@@ -36,8 +42,12 @@ int main() {
         CloseWindow();
         return 1;
     }
+    /// Musik leiser
+    SetMusicVolume(game->music, 0.35f);
+
 
     while (!WindowShouldClose()) {
+        UpdateMusicStream(game->music);
         handleInput();
         updateGame();
         BeginDrawing();
@@ -56,8 +66,9 @@ int main() {
                     3.0f,
                     YELLOW);
 
+        const char* currentLevel = TextFormat("Level %i", game ? game->level : 0);
         DrawTextEx(font,
-                   "Level 01",
+                   currentLevel,
                    (Vector2){570, 740},
                    34,
                    2,
@@ -79,6 +90,7 @@ int main() {
         snprintf(highscoreText, sizeof(highscoreText), "%05d", game->highScore);
         DrawTextEx(font, "HIGHSCORE:", (Vector2){480, 15}, 34, 2, YELLOW);
         DrawTextEx(font, highscoreText, (Vector2){670, 15}, 34, 2, YELLOW);
+
 
         drawGame();
         EndDrawing();

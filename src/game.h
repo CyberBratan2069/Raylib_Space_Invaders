@@ -28,17 +28,21 @@ typedef struct Game {
     float      timeLastSpawnMysteryShip;
 
     int        playerLives;
-
     bool       gameOver;
-
     int        score;
     int        highScore;
-
     int        level;
+    int        anyAlive;
+    Music      music;
+    Sound      shootLaserSound;
+    Sound      alienKillingSound;
 
 } Game;
 
 Game* new_game();
+
+
+
 void delete_game();
 void updateGame();
 void drawGame();
@@ -53,6 +57,7 @@ void createAliens(void);
 void drawAliens(void);
 void deleteAliens(void);
 void moveAliens(void);
+int  findBottomAlien(int col);
 void alienShootLaser(void);
 
 void checkForHitbox();
@@ -63,6 +68,9 @@ void reset();
 void checkForHighscore();
 void safeHighscoreToFile(int highcore);
 int loadHighscoreFromFile();
+
+void currentLevel();
+void nextLevel();
 
 
 extern Game* game;

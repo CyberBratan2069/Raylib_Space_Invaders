@@ -38,7 +38,6 @@ Spaceship* new_spaceship() {
 
 void delete_spaceship() {
     if(!spaceship) return;
-
     UnloadTexture(spaceship->image);
     free(spaceship);
     spaceship = NULL;
@@ -75,6 +74,7 @@ void fireLaser() {
         laser.active = true;
         lasers_push(&game->lasers, laser);
         spaceship->lastFireTime = GetTime();
+        PlaySound(game->shootLaserSound);
     }
 }
 
