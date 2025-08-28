@@ -69,9 +69,13 @@ Game* new_game() {
     game->timeLastSpawnMysteryShip = 0.0f;
     game->mysteryShipSpawnInterval = (float)GetRandomValue(10, 20);
 
+    /// Player initialization
+    game->playerLives = 3;
+    game->gameOver    = false;
 
     game->obstaclesCount = count;
     lasers_init(&game->lasers);
+
     return game;
 }
 
@@ -90,6 +94,7 @@ void delete_game() {
 
 
 void updateGame() {
+    if(!game && game->gameOver) return;
 
     double currentTime = GetTime();
     if(currentTime - game->timeLastSpawnMysteryShip > game->mysteryShipSpawnInterval) {
@@ -111,6 +116,10 @@ void updateGame() {
     deleteInactiveLasers();
 
     updateMysteryShip();
+
+    if(game->playerLives <= 0) {
+        game->gameOver = true;
+    }
 }
 
 
@@ -138,27 +147,15 @@ void handleInput() {
 
 
 void deleteInactiveLasers() {
-
-    /*
     size_t i = 0;
-    while(i < game->lasers.size) {
-        Laser* laser = &game->lasers.data[i];
-        if(!laser->active) {
+    while (i < game->lasers.size) {
+        if (!game->lasers.data[i].active) {
             lasers_remove_unordered(&game->lasers, i);
         } else {
             i++;
         }
     }
-    */
 
-    for(Laser* it = game->lasers.data; it< game->lasers.data + game->lasers.size; it++) {
-        if(!it->active) {
-            size_t idx = (size_t)(it - game->lasers.data);
-            lasers_remove_unordered(&game->lasers, idx);
-        } else {
-            it++;
-        }
-    }
 
 }
 
@@ -318,6 +315,86 @@ void moveAliens(void) {
         if(!alien) continue;
         alien->position.x += direction_x * (float)game->aliensDirection;
     }
+
+    Rectangle ship = hitboxSpaceship();
+    if (ship.width > 0 && ship.height > 0) {
+        for (size_t i = 0; i < game->aliensCount; ++i) {
+            Alien* a = game->aliens[i];
+            if (!a || a->image.id == 0) continue;
+
+            Rectangle ar = (Rectangle){
+                    a->position.x,
+                    a->position.y,
+                    (float)a->image.width,
+                    (float)a->image.height
+            };
+
+            if (CheckCollisionRecs(ar, ship)) {
+                game->playerLives = 0;
+                game->gameOver = true;
+                return; // sofort beenden
+            }
+        }
+    }
+
+    for (size_t ai = 0; ai < game->aliensCount; ++ai) {
+        Alien* a = game->aliens[ai];
+        if (!a || a->image.id == 0) continue;
+
+        Rectangle ar = (Rectangle){
+                a->position.x,
+                a->position.y,
+                (float)a->image.width,
+                (float)a->image.height
+        };
+
+        for (size_t ob = 0; ob < game->obstaclesCount; ++ob) {
+            Obstacle* obs = game->obstacles[ob];
+            if (!obs) continue;
+
+            Rectangle orc = (Rectangle){
+                    obs->position.x,
+                    obs->position.y,
+                    OBSTACLE_W * 3.0f,
+                    OBSTACLE_H * 3.0f
+            };
+
+            if (!CheckCollisionRecs(orc, ar)) continue;
+
+
+            float relX0 = ar.x - obs->position.x;
+            float relY0 = ar.y - obs->position.y;
+            float relX1 = relX0 + ar.width;
+            float relY1 = relY0 + ar.height;
+
+
+            float maxW = OBSTACLE_W * 3.0f;
+            float maxH = OBSTACLE_H * 3.0f;
+            float clX0 = relX0 < 0 ? 0 : (relX0 > maxW ? maxW : relX0);
+            float clY0 = relY0 < 0 ? 0 : (relY0 > maxH ? maxH : relY0);
+            float clX1 = relX1 < 0 ? 0 : (relX1 > maxW ? maxW : relX1);
+            float clY1 = relY1 < 0 ? 0 : (relY1 > maxH ? maxH : relY1);
+
+
+            int x0 = (int)(clX0 / 3.0f);
+            int y0 = (int)(clY0 / 3.0f);
+            int x1 = (int)((clX1 - 0.001f) / 3.0f);
+            int y1 = (int)((clY1 - 0.001f) / 3.0f);
+
+            if (x0 < 0) x0 = 0;
+            if (y0 < 0) y0 = 0;
+            if (x1 >= OBSTACLE_W) x1 = OBSTACLE_W - 1;
+            if (y1 >= OBSTACLE_H) y1 = OBSTACLE_H - 1;
+
+            for (int y = y0; y <= y1; ++y) {
+                for (int x = x0; x <= x1; ++x) {
+                    if (obs->grid[y][x]) {
+                        obs->grid[y][x] = 0;
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -380,21 +457,159 @@ void alienShootLaser(void) {
 void checkForHitbox() {
 
     /// Spaceship lasers
-    if(!game || !game->aliens || game->aliensCount == 0) return;
+    if(!game) return;
 
     for(size_t i=0; i< game->lasers.size; i++) {
         Laser* laser = &game->lasers.data[i];
         if(!laser->active) continue;
         if(laser->speed >= 0) continue;
 
-        for(size_t a=0; a< game->aliensCount; a++) {
-            alien = game->aliens[a];
-            if(!alien || alien->image.id == 0) continue;
+        if(game->aliens && game->aliensCount > 0) {
+            for(size_t al=0; al< game->aliensCount; al++) {
+                alien = game->aliens[al];
+                if(!alien || alien->image.id == 0) continue;
 
-            if(CheckCollisionRecs(hitboxAlien(), hitboxLaser(laser))) {
-                UnloadTexture(alien->image);
-                free(alien);
-                game->aliens[a] = NULL;
+                if(CheckCollisionRecs(hitboxAlien(), hitboxLaser(laser))) {
+                    UnloadTexture(alien->image);
+                    free(alien);
+                    game->aliens[al] = NULL;
+                    laser->active = false;
+                    break;
+                }
+
+                if(CheckCollisionRecs(hitboxMysteryship(), hitboxLaser(laser))) {
+                    mysteryShip->active = false;
+                }
+            }
+        }
+
+        if(laser->active) {
+            for(size_t ob=0; ob< game->obstaclesCount; ob++) {
+                obstacle = game->obstacles[ob];
+                if(!obstacle) continue;
+
+                Rectangle lr  = hitboxLaser(laser);
+                Rectangle orc = (Rectangle){
+                        obstacle->position.x,
+                        obstacle->position.y,
+                        OBSTACLE_W * 3.0f,
+                        OBSTACLE_H * 3.0f
+                };
+
+                if(!CheckCollisionRecs(orc, lr)) continue;
+
+                float relX0 = lr.x - obstacle->position.x;
+                float relY0 = lr.y - obstacle->position.y;
+                float relX1 = relX0 + lr.width;
+                float relY1 = relY0 + lr.height;
+
+                float maxW = OBSTACLE_W * 3.0f;
+                float maxH = OBSTACLE_H * 3.0f;
+                float clX0 = relX0 < 0 ? 0 : (relX0 > maxW ? maxW : relX0);
+                float clY0 = relY0 < 0 ? 0 : (relY0 > maxH ? maxH : relY0);
+                float clX1 = relX1 < 0 ? 0 : (relX1 > maxW ? maxW : relX1);
+                float clY1 = relY1 < 0 ? 0 : (relY1 > maxH ? maxH : relY1);
+
+                int x0 = (int)(clX0 / 3.0f);
+                int y0 = (int)(clY0 / 3.0f);
+                int x1 = (int)((clX1 - 0.001f) / 3.0f);
+                int y1 = (int)((clY1 - 0.001f) / 3.0f);
+
+                if (x0 < 0) x0 = 0;
+                if (y0 < 0) y0 = 0;
+                if (x1 >= OBSTACLE_W) x1 = OBSTACLE_W - 1;
+                if (y1 >= OBSTACLE_H) y1 = OBSTACLE_H - 1;
+
+                bool hit = false;
+
+                for (int y = y0; y <= y1 ; ++y) {
+                    for (int x = x0; x <= x1; ++x) {
+                        if (obstacle->grid[y][x]) {
+                            obstacle->grid[y][x] = 0;
+                            hit = true;
+                        }
+                    }
+                }
+
+                if (hit) {
+                    laser->active = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    /// Alien Lasers
+    for(size_t i=0; i< game->lasers.size; i++) {
+        Laser* laser = &game->lasers.data[i];
+        if(!laser->active) continue;
+        if(laser->speed <= 0) continue;
+
+        if(CheckCollisionRecs(hitboxSpaceship(), hitboxLaser(laser))) {
+            laser->active = false;
+
+            if(game->playerLives > 0) {
+                game->playerLives--;
+                TraceLog(LOG_INFO, "HIT: playerLives=%d", game->playerLives);
+            }
+            if(game->playerLives <= 0) {
+                game->playerLives = 0;
+                game->playerLives = true;
+                TraceLog(LOG_INFO, "GAME OVER");
+            }
+
+            continue;
+        }
+
+        for(size_t ob=0; ob< game->obstaclesCount; ob++) {
+            Obstacle* obs = game->obstacles[ob];
+            if(!obs) continue;
+
+            Rectangle lr = hitboxLaser(laser);
+            Rectangle orc = (Rectangle){
+                    obs->position.x,
+                    obs->position.y,
+                    OBSTACLE_W * 3.0f,
+                    OBSTACLE_H * 3.0f
+            };
+
+            if(!CheckCollisionRecs(orc, lr)) continue;
+
+            float relX0 = lr.x - obs->position.x;
+            float relY0 = lr.y - obs->position.y;
+            float relX1 = relX0 + lr.width;
+            float relY1 = relY0 + lr.height;
+
+
+            float maxW = OBSTACLE_W * 3.0f;
+            float maxH = OBSTACLE_H * 3.0f;
+            float clX0 = relX0 < 0 ? 0 : (relX0 > maxW ? maxW : relX0);
+            float clY0 = relY0 < 0 ? 0 : (relY0 > maxH ? maxH : relY0);
+            float clX1 = relX1 < 0 ? 0 : (relX1 > maxW ? maxW : relX1);
+            float clY1 = relY1 < 0 ? 0 : (relY1 > maxH ? maxH : relY1);
+
+            int x0 = (int)(clX0 / 3.0f);
+            int y0 = (int)(clY0 / 3.0f);
+
+            int x1 = (int)((clX1 - 0.001f) / 3.0f);
+            int y1 = (int)((clY1 - 0.001f) / 3.0f);
+
+            if (x0 < 0) x0 = 0;
+            if (y0 < 0) y0 = 0;
+            if (x1 >= OBSTACLE_W) x1 = OBSTACLE_W - 1;
+            if (y1 >= OBSTACLE_H) y1 = OBSTACLE_H - 1;
+
+            bool hit = false;
+            for (int y = y0; y <= y1; ++y) {
+                for (int x = x0; x <= x1; ++x) {
+                    if (obs->grid[y][x]) {
+                        obs->grid[y][x] = 0;
+                        hit = true;
+                    }
+                }
+            }
+
+            if (hit) {
                 laser->active = false;
                 break;
             }

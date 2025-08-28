@@ -13,6 +13,7 @@
 #define OBSTACLE_H 14
 #define OBSTACLE_W 23
 
+
 typedef struct {
     Vector2 position;
     uint8_t grid[OBSTACLE_H][OBSTACLE_W];
@@ -21,3 +22,6 @@ typedef struct {
 
 Obstacle* new_obstacle(Vector2 position);
 void drawObstacle(const Obstacle* obstacle);
+
+
+extern Obstacle* obstacle;

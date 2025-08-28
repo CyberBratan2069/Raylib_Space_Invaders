@@ -41,6 +41,7 @@ int main() {
         BeginDrawing();
         ClearBackground(grey);
         drawGame();
+
         EndDrawing();
     }
 

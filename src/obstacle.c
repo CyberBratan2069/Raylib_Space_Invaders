@@ -12,6 +12,7 @@
 #include "block.h"
 #include "raylib.h"
 
+Obstacle* obstacle = NULL;
 
 static const uint8_t defaultGrid[OBSTACLE_H][OBSTACLE_W] = {
         {0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0},
@@ -31,7 +32,6 @@ static const uint8_t defaultGrid[OBSTACLE_H][OBSTACLE_W] = {
 
 
 Obstacle* new_obstacle(Vector2 position) {
-    Obstacle* obstacle = NULL;
     obstacle = malloc(sizeof *obstacle);
     if(!obstacle) return NULL;
     obstacle->position = position;

@@ -32,7 +32,7 @@ MysteryShip* new_mysteryShip() {
 
 void delete_mysteryShip() {
     if(!mysteryShip) return;
-    if(mysteryShip->image.id == 0) {
+    if(mysteryShip->image.id != 0) {
         UnloadTexture(mysteryShip->image);
         mysteryShip->image.id = 0;
     }
@@ -45,15 +45,18 @@ void delete_mysteryShip() {
 void spawnMysteryShip() {
     if(!mysteryShip) return;
 
-    mysteryShip->position.y = 50.0f;
-    int side = GetRandomValue(0, 1);
+    const int screenW = GetScreenWidth();
+    const int baseSpeed = 3;
+    const bool fromLeft = GetRandomValue(0, 1) == 0;
 
-    if(side == 0) {
-        mysteryShip->position.x = 0.0f;
-        mysteryShip->speed = 3;
+    mysteryShip->position.y = 50.0f;
+
+    if(fromLeft) {
+        mysteryShip->position.x = -(float)mysteryShip->image.width;
+        mysteryShip->speed = +baseSpeed;
     } else {
-        mysteryShip->position.x = (float)GetScreenWidth() - (float)mysteryShip->image.width;
-        mysteryShip->speed = -3;
+        mysteryShip->position.x = (float)screenW;
+        mysteryShip->speed = - baseSpeed;
     }
 
     mysteryShip->active = true;
@@ -64,8 +67,15 @@ void updateMysteryShip() {
     if(!mysteryShip || !mysteryShip->active) return;
 
     mysteryShip->position.x += (float)mysteryShip->speed;
-    if(mysteryShip->position.x > (float)GetScreenWidth() - (float)mysteryShip->image.width || mysteryShip->position.x < 0) {
-        mysteryShip->active = false;
+
+    if(mysteryShip->speed > 0) {
+        if(mysteryShip->position.x > (float)GetScreenWidth()) {
+            mysteryShip->active = false;
+        }
+    } else {
+        if (mysteryShip->position.x + (float)mysteryShip->image.width < 0.0f) {
+            mysteryShip->active = false;
+        }
     }
 }
 

@@ -27,6 +27,10 @@ typedef struct Game {
     float      mysteryShipSpawnInterval;
     float      timeLastSpawnMysteryShip;
 
+    int        playerLives;
+
+    bool       gameOver;
+
 } Game;
 
 Game* new_game();
