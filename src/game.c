@@ -72,19 +72,18 @@ void init_spaceship()
         UnloadSound(game->alienKillingSound);
         free(game);
         game = NULL;
-        return;
     }
 }
 
 
 void init_obstacles()
 {
-    size_t count = 4;
-    float obstacleWidth = OBSTACLE_W * 3.0f;
-    float screenWidth   = (float)GetScreenWidth();
-    float gap = (screenWidth - ((float)count * obstacleWidth)) / (float)(count + 1);
-    Vector2 start = (Vector2){gap, 550.0f};
-    float spacingX = obstacleWidth + gap;
+    const size_t count = 4;
+    const float obstacleWidth = OBSTACLE_W * 3.0f;
+    const float screenWidth   = (float)GetScreenWidth();
+    const float gap = (screenWidth - ((float)count * obstacleWidth)) / (float)(count + 1);
+    const Vector2 start = (Vector2){gap, 550.0f};
+    const float spacingX = obstacleWidth + gap;
 
     game->obstacles = createObstacles(start, count, spacingX);
     if(!game->obstacles) {
@@ -159,7 +158,7 @@ void delete_game() {
 void updateGame() {
     if(!game || game->gameOver) return;
 
-    double currentTime = GetTime();
+    const double currentTime = GetTime();
     if(currentTime - game->timeLastSpawnMysteryShip > game->mysteryShipSpawnInterval) {
         spawnMysteryShip();
         game->timeLastSpawnMysteryShip = (float)GetTime();
@@ -199,7 +198,7 @@ void drawGame() {
 
     drawSpaceship();
 
-    for(Laser* it = game->lasers.data; it< game->lasers.data + game->lasers.size; it++) {
+    for(const Laser* it = game->lasers.data; it< game->lasers.data + game->lasers.size; it++) {
         drawLaser(it);
     }
 
@@ -266,10 +265,10 @@ void deleteInactiveLasers() {
 }
 
 
-Obstacle** createObstacles(Vector2 start, size_t count, float spacingX) {
+Obstacle** createObstacles(const Vector2 start, const size_t count, const float spacingX) {
     if(count == 0) return NULL;
 
-    Obstacle** obstaclesArr = (Obstacle**)malloc(count * sizeof * obstaclesArr);
+    Obstacle** obstaclesArr = malloc(count * sizeof * obstaclesArr);
     if(!obstaclesArr) return NULL;
 
     for(int i=0; i< count; i++) {
@@ -305,7 +304,7 @@ void createAliens(void) {
     float spacingX = 50.0f;
     float spacingY = 50.0f;
 
-    size_t total = ((size_t)rows * (size_t)cols);
+    const size_t total = (size_t)rows * (size_t)cols;
     game->aliens = (Alien**)malloc(total * sizeof *game->aliens);
     if(!game->aliens) {
         game->aliensCount = 0;
@@ -382,7 +381,7 @@ void deleteAliens(void) {
 void moveAliens(void) {
     if(!game->aliens || game->aliensCount == 0) return;
 
-    float speedFactor = 1.0f + 0.10f * (float)(game->level - 1); //10% Steigerung pro Level
+    const float speedFactor = 1.0f + 0.10f * (float)(game->level - 1); //10% Steigerung pro Level
     const float direction_x = 1.0f * speedFactor;
     const float direction_y = 10.0f;
 
@@ -427,13 +426,13 @@ void moveAliens(void) {
         alien->position.x += direction_x * (float)game->aliensDirection;
     }
 
-    Rectangle ship = hitboxSpaceship();
+    const Rectangle ship = hitboxSpaceship();
     if (ship.width > 0 && ship.height > 0) {
         for (size_t i = 0; i < game->aliensCount; ++i) {
             Alien* a = game->aliens[i];
             if (!a || a->image.id == 0) continue;
 
-            Rectangle ar = (Rectangle){
+            const Rectangle ar = (Rectangle){
                     a->position.x,
                     a->position.y,
                     (float)a->image.width,
@@ -452,7 +451,7 @@ void moveAliens(void) {
         Alien* a = game->aliens[ai];
         if (!a || a->image.id == 0) continue;
 
-        Rectangle ar = (Rectangle){
+        const Rectangle ar = (Rectangle){
                 a->position.x,
                 a->position.y,
                 (float)a->image.width,
@@ -463,7 +462,7 @@ void moveAliens(void) {
             Obstacle* obs = game->obstacles[ob];
             if (!obs) continue;
 
-            Rectangle orc = (Rectangle){
+            const Rectangle orc = (Rectangle){
                     obs->position.x,
                     obs->position.y,
                     OBSTACLE_W * 3.0f,
@@ -473,18 +472,18 @@ void moveAliens(void) {
             if (!CheckCollisionRecs(orc, ar)) continue;
 
 
-            float relX0 = ar.x - obs->position.x;
-            float relY0 = ar.y - obs->position.y;
-            float relX1 = relX0 + ar.width;
-            float relY1 = relY0 + ar.height;
+            const float relX0 = ar.x - obs->position.x;
+            const float relY0 = ar.y - obs->position.y;
+            const float relX1 = relX0 + ar.width;
+            const float relY1 = relY0 + ar.height;
 
 
-            float maxW = OBSTACLE_W * 3.0f;
-            float maxH = OBSTACLE_H * 3.0f;
-            float clX0 = relX0 < 0 ? 0 : (relX0 > maxW ? maxW : relX0);
-            float clY0 = relY0 < 0 ? 0 : (relY0 > maxH ? maxH : relY0);
-            float clX1 = relX1 < 0 ? 0 : (relX1 > maxW ? maxW : relX1);
-            float clY1 = relY1 < 0 ? 0 : (relY1 > maxH ? maxH : relY1);
+            const float maxW = OBSTACLE_W * 3.0f;
+            const float maxH = OBSTACLE_H * 3.0f;
+            const float clX0 = relX0 < 0 ? 0 : (relX0 > maxW ? maxW : relX0);
+            const float clY0 = relY0 < 0 ? 0 : (relY0 > maxH ? maxH : relY0);
+            const float clX1 = relX1 < 0 ? 0 : (relX1 > maxW ? maxW : relX1);
+            const float clY1 = relY1 < 0 ? 0 : (relY1 > maxH ? maxH : relY1);
 
 
             int x0 = (int)(clX0 / 3.0f);
@@ -511,7 +510,7 @@ void moveAliens(void) {
 
 int findBottomAlien(int col) {
     for(int i= ALIEN_ROWS - 1; i>= 0; i--) {
-        size_t index = (size_t)(ALIEN_COLS * i + col);
+        const size_t index = (size_t)(ALIEN_COLS * i + col);
         alien = game->aliens[index];
         if(alien && alien->image.id != 0) {
             return (int)index;
@@ -524,20 +523,20 @@ int findBottomAlien(int col) {
 void alienShootLaser(void) {
     if(!game || !game->aliens || game->aliensCount == 0) return;
 
-    int all5Levels = 5;
-    float frequencyFactor        = 1.0f + 0.50f * (float)(game->level - 1) / (float)all5Levels; //50% alle 5 Level steigerung
+    const int all5Levels = 5;
+    const float frequencyFactor  = 1.0f + 0.50f * (float)(game->level - 1) / (float)all5Levels; //50% alle 5 Level steigerung
     static double lastShootTime  = 0.0;
     static int    lastShooter    = -1;
     const double  shootFrequency = 0.8 / frequencyFactor;
 
-    double currenTime = GetTime();
+    const double currenTime = GetTime();
     if (currenTime - lastShootTime < shootFrequency) return;
 
-    int maxTries = 32;
+    const int maxTries = 32;
     int index    = -1;
     for(int i=0; i< maxTries; i++) {
-        int col = GetRandomValue(0, ALIEN_COLS - 1);
-        int cand = findBottomAlien(col);
+        const int col = GetRandomValue(0, ALIEN_COLS - 1);
+        const int cand = findBottomAlien(col);
         if (cand >= 0 && cand != lastShooter) {
             index = cand;
             break;
@@ -546,7 +545,7 @@ void alienShootLaser(void) {
 
     if (index < 0) return;
 
-    Alien* shooter = game->aliens[index];
+    const Alien* shooter = game->aliens[index];
     lastShooter    = index;
     lastShootTime  = currenTime;
 
@@ -628,17 +627,17 @@ void checkForHitbox() {
 
                 if(!CheckCollisionRecs(orc, lr)) continue;
 
-                float relX0 = lr.x - obstacle->position.x;
-                float relY0 = lr.y - obstacle->position.y;
-                float relX1 = relX0 + lr.width;
-                float relY1 = relY0 + lr.height;
+                const float relX0 = lr.x - obstacle->position.x;
+                const float relY0 = lr.y - obstacle->position.y;
+                const float relX1 = relX0 + lr.width;
+                const float relY1 = relY0 + lr.height;
 
-                float maxW = OBSTACLE_W * 3.0f;
-                float maxH = OBSTACLE_H * 3.0f;
-                float clX0 = relX0 < 0 ? 0 : (relX0 > maxW ? maxW : relX0);
-                float clY0 = relY0 < 0 ? 0 : (relY0 > maxH ? maxH : relY0);
-                float clX1 = relX1 < 0 ? 0 : (relX1 > maxW ? maxW : relX1);
-                float clY1 = relY1 < 0 ? 0 : (relY1 > maxH ? maxH : relY1);
+                const float maxW = OBSTACLE_W * 3.0f;
+                const float maxH = OBSTACLE_H * 3.0f;
+                const float clX0 = relX0 < 0 ? 0 : (relX0 > maxW ? maxW : relX0);
+                const float clY0 = relY0 < 0 ? 0 : (relY0 > maxH ? maxH : relY0);
+                const float clX1 = relX1 < 0 ? 0 : (relX1 > maxW ? maxW : relX1);
+                const float clY1 = relY1 < 0 ? 0 : (relY1 > maxH ? maxH : relY1);
 
                 int x0 = (int)(clX0 / 3.0f);
                 int y0 = (int)(clY0 / 3.0f);
@@ -695,8 +694,8 @@ void checkForHitbox() {
             Obstacle* obs = game->obstacles[ob];
             if(!obs) continue;
 
-            Rectangle lr = hitboxLaser(laser);
-            Rectangle orc = (Rectangle){
+            const Rectangle lr = hitboxLaser(laser);
+            const Rectangle orc = (Rectangle){
                     obs->position.x,
                     obs->position.y,
                     OBSTACLE_W * 3.0f,
@@ -705,18 +704,18 @@ void checkForHitbox() {
 
             if(!CheckCollisionRecs(orc, lr)) continue;
 
-            float relX0 = lr.x - obs->position.x;
-            float relY0 = lr.y - obs->position.y;
-            float relX1 = relX0 + lr.width;
-            float relY1 = relY0 + lr.height;
+            const float relX0 = lr.x - obs->position.x;
+            const float relY0 = lr.y - obs->position.y;
+            const float relX1 = relX0 + lr.width;
+            const float relY1 = relY0 + lr.height;
 
 
-            float maxW = OBSTACLE_W * 3.0f;
-            float maxH = OBSTACLE_H * 3.0f;
-            float clX0 = relX0 < 0 ? 0 : (relX0 > maxW ? maxW : relX0);
-            float clY0 = relY0 < 0 ? 0 : (relY0 > maxH ? maxH : relY0);
-            float clX1 = relX1 < 0 ? 0 : (relX1 > maxW ? maxW : relX1);
-            float clY1 = relY1 < 0 ? 0 : (relY1 > maxH ? maxH : relY1);
+            const float maxW = OBSTACLE_W * 3.0f;
+            const float maxH = OBSTACLE_H * 3.0f;
+            const float clX0 = relX0 < 0 ? 0 : (relX0 > maxW ? maxW : relX0);
+            const float clY0 = relY0 < 0 ? 0 : (relY0 > maxH ? maxH : relY0);
+            const float clX1 = relX1 < 0 ? 0 : (relX1 > maxW ? maxW : relX1);
+            const float clY1 = relY1 < 0 ? 0 : (relY1 > maxH ? maxH : relY1);
 
             int x0 = (int)(clX0 / 3.0f);
             int y0 = (int)(clY0 / 3.0f);
@@ -785,7 +784,8 @@ void safeHighscoreToFile(int highscore) {
         TraceLog(LOG_WARNING, "safeHighscoreToFile(): cannot open '%' for writing", path);
         return;
     }
-    size_t w = fwrite(&highscore, sizeof(highscore), 1, f);
+
+    const size_t w = fwrite(&highscore, sizeof(highscore), 1, f);
     if(w != 1) {
         TraceLog(LOG_WARNING, "safeHighscoreToFile(): write failed for '%s'", path);
     }
@@ -801,7 +801,7 @@ int loadHighscoreFromFile() {
     }
 
     int hs = 0;
-    size_t r = fread(&hs, sizeof(hs), 1, file);
+    const size_t r = fread(&hs, sizeof(hs), 1, file);
     fclose(file);
 
     if(r != 1) {
