@@ -71,6 +71,7 @@ void alienShootLaser(void);
 void checkForHitbox();
 
 void gameOver();
+void drawGameOver();
 void reset();
 
 void checkForHighscore();

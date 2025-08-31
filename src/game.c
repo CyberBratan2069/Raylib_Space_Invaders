@@ -110,7 +110,6 @@ void init_mysteryship()
 {
     if(!new_mysteryShip()) {
         delete_game();
-        //delete_spaceship();
         free(game);
         game = NULL;
         return;
@@ -155,7 +154,8 @@ void delete_game() {
 }
 
 
-void updateGame() {
+void updateGame()
+{
     if(!game || game->gameOver) return;
 
     const double currentTime = GetTime();
@@ -194,7 +194,8 @@ void updateGame() {
 }
 
 
-void drawGame() {
+void drawGame()
+{
 
     drawSpaceship();
 
@@ -208,36 +209,12 @@ void drawGame() {
 
     drawAliens();
     drawMysteryShip();
-
-    if (game && game->gameOver) {
-        const char* msg  = "GAME OVER";
-        const int   fs   = 48;
-        const int   msgW = MeasureText(msg, fs);
-        const int   mx   = (GetScreenWidth() - msgW) / 2;
-        const int   my   = GetScreenHeight() / 2 - fs;
-        DrawText(msg, mx+2, my+2, fs, BLACK);
-        DrawText(msg, mx,   my,   fs, RED);
-
-        const char* sub1    = "Press ESC to leave";
-        const int   subFS   = 20;
-        const int   sub1W   = MeasureText(sub1, subFS);
-        const int   sub1X   = (GetScreenWidth() - sub1W) / 2;
-        const int   sub1Y   = my + fs + 20;
-        DrawText(sub1, sub1X+1, sub1Y+1, subFS, BLACK);
-        DrawText(sub1, sub1X,   sub1Y,   subFS, RAYWHITE);
-
-        const char* sub2  = "Press ENTER to restart";
-        const int   sub2W = MeasureText(sub2, subFS);
-        const int   sub2X = (GetScreenWidth() - sub2W) / 2;
-        const int   sub2Y = sub1Y + subFS + 8;
-        DrawText(sub2, sub2X+1, sub2Y+1, subFS, BLACK);
-        DrawText(sub2, sub2X,   sub2Y,   subFS, RAYWHITE);
-
-    }
+    drawGameOver();
 }
 
 
-void handleInput() {
+void handleInput()
+{
     if(game && game->gameOver) {
         if(IsKeyDown(KEY_ENTER)) {
             reset();
@@ -251,7 +228,8 @@ void handleInput() {
 }
 
 
-void deleteInactiveLasers() {
+void deleteInactiveLasers()
+{
     size_t i = 0;
     while (i < game->lasers.size) {
         if (!game->lasers.data[i].active) {
@@ -265,7 +243,8 @@ void deleteInactiveLasers() {
 }
 
 
-Obstacle** createObstacles(const Vector2 start, const size_t count, const float spacingX) {
+Obstacle** createObstacles(const Vector2 start, const size_t count, const float spacingX)
+{
     if(count == 0) return NULL;
 
     Obstacle** obstaclesArr = malloc(count * sizeof * obstaclesArr);
@@ -286,7 +265,8 @@ Obstacle** createObstacles(const Vector2 start, const size_t count, const float 
 }
 
 
-void delete_Obstacles(Obstacle** obstaclesArr, size_t count) {
+void delete_Obstacles(Obstacle** obstaclesArr,const size_t count)
+{
     if(!obstaclesArr) return;
     for(int i=0; i< count; i++) {
         free(obstaclesArr[i]);
@@ -296,7 +276,8 @@ void delete_Obstacles(Obstacle** obstaclesArr, size_t count) {
 }
 
 
-void createAliens(void) {
+void createAliens(void)
+{
     const int rows = ALIEN_ROWS;
     const int cols = ALIEN_COLS;
     float startX = 100.0f;
@@ -342,7 +323,8 @@ void createAliens(void) {
 }
 
 
-void drawAliens(void) {
+void drawAliens(void)
+{
     if(!game->aliens || game->aliensCount == 0) return;
     for(size_t i=0; i< game->aliensCount; i++) {
         alien = game->aliens[i];
@@ -353,7 +335,8 @@ void drawAliens(void) {
 }
 
 
-void deleteAliens(void) {
+void deleteAliens(void)
+{
     if(!game->aliens) {
         TraceLog(LOG_INFO, "deleteAliens(): game->aliens is NULL");
         return;
@@ -378,7 +361,8 @@ void deleteAliens(void) {
 }
 
 
-void moveAliens(void) {
+void moveAliens(void)
+{
     if(!game->aliens || game->aliensCount == 0) return;
 
     const float speedFactor = 1.0f + 0.10f * (float)(game->level - 1); //10% Steigerung pro Level
@@ -508,7 +492,8 @@ void moveAliens(void) {
 }
 
 
-int findBottomAlien(int col) {
+int findBottomAlien(const int col)
+{
     for(int i= ALIEN_ROWS - 1; i>= 0; i--) {
         const size_t index = (size_t)(ALIEN_COLS * i + col);
         alien = game->aliens[index];
@@ -520,7 +505,8 @@ int findBottomAlien(int col) {
 }
 
 
-void alienShootLaser(void) {
+void alienShootLaser(void)
+{
     if(!game || !game->aliens || game->aliensCount == 0) return;
 
     const int all5Levels = 5;
@@ -566,7 +552,8 @@ void alienShootLaser(void) {
 }
 
 
-void checkForHitbox() {
+void checkForHitbox()
+{
 
     /// Spaceship lasers
     if(!game) return;
@@ -747,7 +734,8 @@ void checkForHitbox() {
 }
 
 
-void checkForHighscore() {
+void checkForHighscore()
+{
     if(game->score > game->highScore) {
         game->highScore = game->score;
         safeHighscoreToFile(game->highScore);
@@ -755,7 +743,8 @@ void checkForHighscore() {
 }
 
 
-void gameOver() {
+void gameOver()
+{
     if(!game || game->gameOver) return;
     game->gameOver = true;
     TraceLog(LOG_INFO, "gameOver(): triggered");
@@ -768,7 +757,38 @@ void gameOver() {
 }
 
 
-void reset() {
+void drawGameOver()
+{
+    if (game && game->gameOver)
+        {
+        const char* msg  = "GAME OVER";
+        const int   fs   = 48;
+        const int   msgW = MeasureText(msg, fs);
+        const int   mx   = (GetScreenWidth() - msgW) / 2;
+        const int   my   = GetScreenHeight() / 2 - fs;
+        DrawText(msg, mx+2, my+2, fs, BLACK);
+        DrawText(msg, mx,   my,   fs, RED);
+
+        const char* sub1    = "Press ESC to leave";
+        const int   subFS   = 20;
+        const int   sub1W   = MeasureText(sub1, subFS);
+        const int   sub1X   = (GetScreenWidth() - sub1W) / 2;
+        const int   sub1Y   = my + fs + 20;
+        DrawText(sub1, sub1X+1, sub1Y+1, subFS, BLACK);
+        DrawText(sub1, sub1X,   sub1Y,   subFS, RAYWHITE);
+
+        const char* sub2  = "Press ENTER to restart";
+        const int   sub2W = MeasureText(sub2, subFS);
+        const int   sub2X = (GetScreenWidth() - sub2W) / 2;
+        const int   sub2Y = sub1Y + subFS + 8;
+        DrawText(sub2, sub2X+1, sub2Y+1, subFS, BLACK);
+        DrawText(sub2, sub2X,   sub2Y,   subFS, RAYWHITE);
+    }
+}
+
+
+void reset()
+{
     if(game) {
         delete_game();
     }
@@ -777,7 +797,8 @@ void reset() {
 }
 
 
-void safeHighscoreToFile(int highscore) {
+void safeHighscoreToFile(int highscore)
+{
     const char* path = "highscore.dat";
     FILE* f = fopen(path, "wb");
     if(!f) {
@@ -793,7 +814,8 @@ void safeHighscoreToFile(int highscore) {
 }
 
 
-int loadHighscoreFromFile() {
+int loadHighscoreFromFile()
+{
     const char* path = "highscore.dat";
     FILE* file = fopen(path, "rb");
     if(!file) {
@@ -812,7 +834,8 @@ int loadHighscoreFromFile() {
 }
 
 
-void currentLevel() {
+void currentLevel()
+{
     if(!game || game->gameOver) return;
 
     if(game->anyAlive == 0) {
@@ -821,7 +844,8 @@ void currentLevel() {
 }
 
 
-void nextLevel() {
+void nextLevel()
+{
     game->level += 1;
 
     deleteAliens();
