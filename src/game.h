@@ -41,6 +41,14 @@ typedef struct Game {
 
 Game* new_game();
 
+void init_game();
+void init_music();
+void init_spaceship();
+void init_obstacles();
+void init_aliens();
+void init_mysteryship();
+void init_player();
+void init_laser();
 
 
 void delete_game();

@@ -12,7 +12,7 @@
 Alien* alien = NULL;
 
 
-Alien* new_alien(int type, Vector2 position) {
+Alien* new_alien(const int type,const Vector2 position) {
     if(type < 1 || type > 3) return NULL;
 
     alien = malloc(sizeof *alien);

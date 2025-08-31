@@ -6,7 +6,6 @@
 
 
 #include "laser.h"
-#include <stdio.h>
 
 
 void updateLaser(Laser* laser) {
@@ -18,10 +17,12 @@ void updateLaser(Laser* laser) {
     }
 }
 
+
 void drawLaser(const Laser* laser) {
     if(!laser || !laser->active) return;
     DrawRectangle((int)laser->position.x, (int)laser->position.y, 4, 15, (Color){243, 216, 63, 255});
 }
+
 
 Rectangle hitboxLaser(const Laser* laser) {
     if(!laser || !laser->active) return (Rectangle){0};

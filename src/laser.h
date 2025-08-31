@@ -9,11 +9,13 @@
 #include "spaceship.h"
 #include <stdbool.h>
 
+
 typedef struct Laser {
     Vector2 position;
     int     speed;
     bool    active;
 } Laser;
+
 
 void updateLaser(Laser* laser);
 void drawLaser(const Laser* laser);

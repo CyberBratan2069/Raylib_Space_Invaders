@@ -70,7 +70,7 @@ void fireLaser() {
     if(GetTime() - spaceship->lastFireTime >= 0.35f) {
         Laser laser;
         laser.position = (Vector2){spaceship->position.x + (float)spaceship->image.width / 2.0f - 2.0f, spaceship->position.y};
-        laser.speed = -10;
+        laser.speed = -7;
         laser.active = true;
         lasers_push(&game->lasers, laser);
         spaceship->lastFireTime = GetTime();

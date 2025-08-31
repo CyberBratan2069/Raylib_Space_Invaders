@@ -17,17 +17,36 @@
 
 Game* game = NULL;
 
-Game* new_game() {
-    /// Game initialization
-    game = malloc(sizeof *game);
-    if(!game) return NULL;
+Game* new_game()
+{
+    init_game();
+    init_music();
+    init_spaceship();
+    init_obstacles();
+    init_aliens();
+    init_mysteryship();
+    init_player();
+    init_laser();
 
-    /// Music initialization
+    return game;
+}
+
+
+void init_game()
+{
+    game = malloc(sizeof *game);
+    if(!game) return;
+}
+
+
+void init_music()
+{
     game->music = LoadMusicStream("../sounds/backgroundMusic.wav");
     PlayMusicStream(game->music);
 
     game->shootLaserSound   = LoadSound("../sounds/spaceshipLaserSound.wav");
     game->alienKillingSound = LoadSound("../sounds/alienKillingSound.wav");
+
 
 
     if(game->shootLaserSound.frameCount == 0) {
@@ -42,18 +61,24 @@ Game* new_game() {
         SetSoundVolume(game->alienKillingSound, 2.0f);
     }
 
+}
 
-    /// Spaceship initialization
+
+void init_spaceship()
+{
     if(!new_spaceship()) {
         UnloadMusicStream(game->music);
         UnloadSound(game->shootLaserSound);
         UnloadSound(game->alienKillingSound);
         free(game);
         game = NULL;
-        return NULL;
+        return;
     }
+}
 
-    /// Obstacles initialization
+
+void init_obstacles()
+{
     size_t count = 4;
     float obstacleWidth = OBSTACLE_W * 3.0f;
     float screenWidth   = (float)GetScreenWidth();
@@ -66,42 +91,49 @@ Game* new_game() {
         delete_spaceship();
         free(game);
         game = NULL;
-        return NULL;
+        return;
     }
+    game->obstaclesCount = count;
+}
 
-    /// Alien initialization
+
+void init_aliens()
+{
     SetRandomSeed((unsigned int)time(NULL));
     game->aliens          = NULL;
     game->aliensCount     = 0;
     game->aliensDirection = 1;
     createAliens();
+}
 
 
-    /// Mystery ship initialization
+void init_mysteryship()
+{
     if(!new_mysteryShip()) {
-        deleteAliens();
-        delete_Obstacles(game->obstacles, count);
-        delete_spaceship();
+        delete_game();
+        //delete_spaceship();
         free(game);
         game = NULL;
-        return NULL;
+        return;
     }
     game->timeLastSpawnMysteryShip = 0.0f;
     game->mysteryShipSpawnInterval = (float)GetRandomValue(10, 20);
+}
 
-    /// Player initialization
+
+void init_player()
+{
     game->playerLives = 3;
     game->gameOver    = false;
     game->score       = 0;
     game->highScore   = loadHighscoreFromFile();
     game->level       = 1;
     game->anyAlive    = (int)game->aliensCount;
+}
 
-    ///
-    game->obstaclesCount = count;
+void init_laser()
+{
     lasers_init(&game->lasers);
-
-    return game;
 }
 
 
@@ -184,12 +216,9 @@ void drawGame() {
         const int   msgW = MeasureText(msg, fs);
         const int   mx   = (GetScreenWidth() - msgW) / 2;
         const int   my   = GetScreenHeight() / 2 - fs;
-
-
         DrawText(msg, mx+2, my+2, fs, BLACK);
         DrawText(msg, mx,   my,   fs, RED);
 
-        // sub1
         const char* sub1    = "Press ESC to leave";
         const int   subFS   = 20;
         const int   sub1W   = MeasureText(sub1, subFS);
@@ -198,11 +227,10 @@ void drawGame() {
         DrawText(sub1, sub1X+1, sub1Y+1, subFS, BLACK);
         DrawText(sub1, sub1X,   sub1Y,   subFS, RAYWHITE);
 
-
         const char* sub2  = "Press ENTER to restart";
         const int   sub2W = MeasureText(sub2, subFS);
         const int   sub2X = (GetScreenWidth() - sub2W) / 2;
-        const int   sub2Y = sub1Y + subFS + 8; // 8px Abstand unter sub1
+        const int   sub2Y = sub1Y + subFS + 8;
         DrawText(sub2, sub2X+1, sub2Y+1, subFS, BLACK);
         DrawText(sub2, sub2X,   sub2Y,   subFS, RAYWHITE);
 
@@ -354,7 +382,7 @@ void deleteAliens(void) {
 void moveAliens(void) {
     if(!game->aliens || game->aliensCount == 0) return;
 
-    float speedFactor = 1.0f + 0.50f * (float)(game->level - 1);
+    float speedFactor = 1.0f + 0.10f * (float)(game->level - 1); //10% Steigerung pro Level
     const float direction_x = 1.0f * speedFactor;
     const float direction_y = 10.0f;
 
@@ -497,7 +525,7 @@ void alienShootLaser(void) {
     if(!game || !game->aliens || game->aliensCount == 0) return;
 
     int all5Levels = 5;
-    float frequencyFactor        = 1.0f + 0.50f * (float)(game->level - 1) / (float)all5Levels;
+    float frequencyFactor        = 1.0f + 0.50f * (float)(game->level - 1) / (float)all5Levels; //50% alle 5 Level steigerung
     static double lastShootTime  = 0.0;
     static int    lastShooter    = -1;
     const double  shootFrequency = 0.8 / frequencyFactor;
@@ -791,6 +819,7 @@ void currentLevel() {
         nextLevel();
     }
 }
+
 
 void nextLevel() {
     game->level += 1;
