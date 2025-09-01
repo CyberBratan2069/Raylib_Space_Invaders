@@ -2,42 +2,21 @@ cmake_minimum_required(VERSION 3.16)
 project(SpaceInvaders C)
 set(CMAKE_C_STANDARD 11)
 
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-add_subdirectory(external/raylib)
+find_package(raylib 5.0 REQUIRED)
 
-file(GLOB SOURCES src/*.c)
-add_executable(SpaceInvaders ${SOURCES})
-target_link_libraries(SpaceInvaders PRIVATE raylib)
+file(GLOB SRC_FILES CONFIGURE_DEPENDS "src/*.c")
+add_executable(${PROJECT_NAME} ${SRC_FILES})
+target_include_directories(${PROJECT_NAME} PRIVATE src)
 
-foreach(dir font graphics sounds)
-    if(EXISTS "${CMAKE_SOURCE_DIR}/${dir}")
-        add_custom_command(TARGET SpaceInvaders POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${CMAKE_SOURCE_DIR}/${dir}"
-                "$<TARGET_FILE_DIR:SpaceInvaders>/${dir}"
-        )
-    endif()
-endforeach()
+target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
-set_target_properties(SpaceInvaders PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/run"
-)
-
-
-
-
-#if(APPLE)
-#    target_link_libraries(SpaceInvaders
-#            "-framework OpenGL"
-#            "-framework Cocoa"
-#            "-framework IOKit"
-#            "-framework CoreVideo"
-#    )
-#endif()
-#
-#
-#if(UNIX AND NOT APPLE)
-#    target_link_libraries(SpaceInvaders m pthread dl GL rt X11)
-#endif()
+if(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+            "-framework OpenGL"
+            "-framework Cocoa"
+            "-framework IOKit"
+            "-framework CoreVideo"
+    )
+elseif(UNIX AND NOT APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE m pthread dl GL rt X11)
+endif()
