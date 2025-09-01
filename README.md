@@ -1,6 +1,16 @@
 <h1>Space Invaders with C and Raylib</h1>
 
+In this classic arcade-style shooter, you take control of a spaceship at the bottom of the screen. Your mission: stop the ever-approaching alien invasion fleet before they reach Earth.
 
+<img src="assets/IngameScene.gif" alt="Gameplay Demo" width="500">
+
+<h2>Gameplay</h2>
+
+- Left Arrow Key to move left
+  
+- Right Arrow Key to move right
+
+- Space to shoot
 
 <h2>Build & Run</h2>
 <h3>System Requirements</h3>
