@@ -41,6 +41,12 @@ void init_game()
 
 void init_music()
 {
+    if (!game) {
+        TraceLog(LOG_ERROR, "unable to init music");
+        return;
+    }
+
+
     game->music = LoadMusicStream("../sounds/backgroundMusic.wav");
     PlayMusicStream(game->music);
 
@@ -52,7 +58,7 @@ void init_music()
     if(game->shootLaserSound.frameCount == 0) {
         TraceLog(LOG_WARNING, "shootLaserSound seems empty(check path");
     } else {
-        SetSoundVolume(game->shootLaserSound, 0.9f);
+        SetSoundVolume(game->shootLaserSound, 0.7f);
     }
 
     if(game->alienKillingSound.frameCount == 0) {
@@ -60,7 +66,6 @@ void init_music()
     } else {
         SetSoundVolume(game->alienKillingSound, 2.0f);
     }
-
 }
 
 
@@ -345,7 +350,7 @@ void deleteAliens(void)
 
     for(size_t i=0; i< game->aliensCount; i++) {
         if(game->aliens[i]) {
-            Texture2D tex = game->aliens[i]->image;
+            const Texture2D tex = game->aliens[i]->image;
             if(tex.id != 0) {
                 TraceLog(LOG_INFO, "deleteAliens(): UnloadTexture id=%u(%ux%u)", tex.id, tex.width, tex.height);
                 UnloadTexture(tex);
@@ -392,8 +397,8 @@ void moveAliens(void)
 
     const float screenWidth = (float)GetScreenWidth();
 
-    bool hitRight = (maxX + direction_x * (float)game->aliensDirection >= screenWidth - 25);
-    bool hitLeft  = (minX + direction_x * (float)game->aliensDirection <= 25.0f);
+    const bool hitRight = (maxX + direction_x * (float)game->aliensDirection >= screenWidth - 25);
+    const bool hitLeft  = (minX + direction_x * (float)game->aliensDirection <= 25.0f);
 
     if(hitRight || hitLeft) {
         game->aliensDirection *= -1;
@@ -604,8 +609,8 @@ void checkForHitbox()
                 obstacle = game->obstacles[ob];
                 if(!obstacle) continue;
 
-                Rectangle lr  = hitboxLaser(laser);
-                Rectangle orc = (Rectangle){
+                const Rectangle lr  = hitboxLaser(laser);
+                const Rectangle orc = (Rectangle){
                         obstacle->position.x,
                         obstacle->position.y,
                         OBSTACLE_W * 3.0f,
@@ -846,7 +851,7 @@ void currentLevel()
 
 void nextLevel()
 {
-    game->level += 1;
+    game->level++;
 
     deleteAliens();
     createAliens();
