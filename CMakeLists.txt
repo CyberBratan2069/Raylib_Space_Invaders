@@ -1,39 +1,43 @@
-cmake_minimum_required(VERSION 3.16)   # 4.0 doesn’t exist; latest is 3.x
+cmake_minimum_required(VERSION 3.16)
 project(SpaceInvaders C)
-
 set(CMAKE_C_STANDARD 11)
 
-add_executable(SpaceInvaders
-        src/main.c
-        src/spaceship.h
-        src/spaceship.c
-        src/game.c
-        src/game.h
-        src/laser.h
-        src/laser.c
-        src/laser_vec.h
-        src/obstacle.c
-        src/obstacle.h
-        src/alien.h
-        src/alien.c
-        src/mysteryship.h
-        src/mysteryship.c
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+add_subdirectory(external/raylib)
+
+file(GLOB SOURCES src/*.c)
+add_executable(SpaceInvaders ${SOURCES})
+target_link_libraries(SpaceInvaders PRIVATE raylib)
+
+foreach(dir font graphics sounds)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/${dir}")
+        add_custom_command(TARGET SpaceInvaders POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_SOURCE_DIR}/${dir}"
+                "$<TARGET_FILE_DIR:SpaceInvaders>/${dir}"
+        )
+    endif()
+endforeach()
+
+set_target_properties(SpaceInvaders PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/run"
 )
 
-find_package(raylib 4.0 REQUIRED)
-
-target_link_libraries(SpaceInvaders raylib)
-
-if(APPLE)
-    target_link_libraries(SpaceInvaders
-            "-framework OpenGL"
-            "-framework Cocoa"
-            "-framework IOKit"
-            "-framework CoreVideo"
-    )
-endif()
 
 
-if(UNIX AND NOT APPLE)
-    target_link_libraries(SpaceInvaders m pthread dl GL rt X11)
-endif()
+
+#if(APPLE)
+#    target_link_libraries(SpaceInvaders
+#            "-framework OpenGL"
+#            "-framework Cocoa"
+#            "-framework IOKit"
+#            "-framework CoreVideo"
+#    )
+#endif()
+#
+#
+#if(UNIX AND NOT APPLE)
+#    target_link_libraries(SpaceInvaders m pthread dl GL rt X11)
+#endif()
