@@ -29,11 +29,10 @@ int main() {
 
     SetMasterVolume(1.0f);
 
-    Image bgImg = LoadImage("../graphics/BackGround.png");
-    Texture2D bg = LoadTextureFromImage(bgImg);
+    const Image bgImg = LoadImage("../graphics/BackGround.png");
+    const Texture2D bg = LoadTextureFromImage(bgImg);
     UnloadImage(bgImg);
-    Font font = LoadFontEx("../font/monogram.ttf", 64, 0, 0);
-    Texture2D spaceshipImages = LoadTexture("../graphics/spaceship.png");
+    const Font font = LoadFontEx("../font/monogram.ttf", 64, 0, 0);
 
 
     game = new_game();
@@ -66,7 +65,7 @@ int main() {
                     3.0f,
                     YELLOW);
 
-        const char* currentLevel = TextFormat("Level %i", game ? game->level : 0);
+        const char* currentLevel = TextFormat("Level %02d", game ? game->level : 0);
         DrawTextEx(font,
                    currentLevel,
                    (Vector2){570, 740},
@@ -75,9 +74,13 @@ int main() {
                    YELLOW);
 
         float x = 50.0f;
-        for(int i=0; i< game->playerLives; i++) {
-            DrawTextureV(spaceshipImages, (Vector2){x, 745}, WHITE);
-            x += 50;
+        if (spaceship) {
+            const Rectangle srcShip = {0, 0, (float)spaceship->image.width, (float)spaceship->image.height};
+            for (int i=0; i< game->playerLives; i++) {
+                const Rectangle dstShip = {x, 740.0f, 32.0f, 32.0f};
+                DrawTexturePro(spaceship->image, srcShip, dstShip, (Vector2){0, 0}, 0.0f, WHITE);
+                x += 40.0f;
+            }
         }
 
 

@@ -27,6 +27,9 @@ Spaceship* new_spaceship() {
         return NULL;
     }
 
+    GenTextureMipmaps(&spaceship->image);
+    SetTextureFilter(spaceship->image, TEXTURE_FILTER_BILINEAR);
+
     spaceship->position.x = (float)(GetScreenWidth()  - spaceship->image.width)  / 2.0f;
     spaceship->position.y = (float)(GetScreenHeight() - spaceship->image.height) - 100.0f;
 
